@@ -1,0 +1,85 @@
+package com.kbseed.service;
+
+import com.kbseed.dto.CreateReservationRequest;
+import com.kbseed.dto.ReservationDTO;
+import com.kbseed.entity.ClassEntity;
+import com.kbseed.entity.ClientEntity;
+import com.kbseed.entity.ReservationEntity;
+import com.kbseed.repository.ClassRepository;
+import com.kbseed.repository.ClientRepository;
+import com.kbseed.repository.ReservationRepository;
+import jakarta.transaction.Transactional;
+import org.springframework.stereotype.Service;
+
+@Service
+public class ReservationService {
+
+    private final ReservationRepository reservationRepository;
+    private final ClassRepository classRepository;
+    private final ClientRepository clientRepository;
+
+    public ReservationService(
+            ReservationRepository reservationRepository,
+            ClassRepository classRepository,
+            ClientRepository clientRepository
+    ) {
+        this.reservationRepository = reservationRepository;
+        this.classRepository = classRepository;
+        this.clientRepository = clientRepository;
+    }
+
+    @Transactional
+    public ReservationDTO inscribirAlumno(Long classId, CreateReservationRequest request) {
+
+        ClassEntity classEntity = classRepository.findById(classId)
+                .orElseThrow(() -> new RuntimeException("Clase no encontrada con id: " + classId));
+
+        ClientEntity clientEntity = clientRepository.findById(request.getClientId())
+                .orElseThrow(() -> new RuntimeException("Alumno no encontrado con id: " + request.getClientId()));
+
+        if (!classEntity.getStudioId().equals(clientEntity.getStudioId())) {
+            throw new RuntimeException("La clase y el alumno no pertenecen al mismo studio");
+        }
+
+        boolean yaInscrito = reservationRepository.existsByClassIdAndClientId(classId, request.getClientId());
+        if (yaInscrito) {
+            throw new RuntimeException("El alumno ya está inscrito en esta clase");
+        }
+
+        if (classEntity.getCapacity() == null || classEntity.getCapacity() <= 0) {
+            throw new RuntimeException("La clase ya no tiene cupos disponibles");
+        }
+
+        ReservationEntity reservation = new ReservationEntity();
+        reservation.setStudioId(classEntity.getStudioId());
+        reservation.setClassId(classEntity.getId());
+        reservation.setClientId(clientEntity.getId());
+        reservation.setReservationStatus("RESERVADO");
+        reservation.setNotes(request.getNotes());
+
+        ReservationEntity savedReservation = reservationRepository.save(reservation);
+
+        classEntity.setCapacity(classEntity.getCapacity() - 1);
+        if (classEntity.getCapacity() <= 0) {
+            classEntity.setStatus("LLENA");
+        }
+
+        classRepository.save(classEntity);
+
+        return toDTO(savedReservation);
+    }
+
+    private ReservationDTO toDTO(ReservationEntity entity) {
+        ReservationDTO dto = new ReservationDTO();
+        dto.setId(entity.getId());
+        dto.setStudioId(entity.getStudioId());
+        dto.setClassId(entity.getClassId());
+        dto.setClientId(entity.getClientId());
+        dto.setReservationStatus(entity.getReservationStatus());
+        dto.setBookedAt(entity.getBookedAt());
+        dto.setCheckedInAt(entity.getCheckedInAt());
+        dto.setCancellationAt(entity.getCancellationAt());
+        dto.setNotes(entity.getNotes());
+        return dto;
+    }
+}
