@@ -22,11 +22,18 @@ public class ClassService {
                 .collect(Collectors.toList());
     }
 
+    public ClassDTO obtenerPorId(Long id) {
+        ClassEntity entity = classRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Clase no encontrada con id: " + id));
+        return toDTO(entity);
+    }
+
     public ClassDTO crear(ClassDTO dto) {
         ClassEntity entity = toEntity(dto);
         ClassEntity saved = classRepository.save(entity);
         return toDTO(saved);
     }
+
     public ClassDTO actualizar(Long id, ClassDTO dto) {
         ClassEntity entity = classRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Clase no encontrada con id: " + id));
@@ -45,6 +52,7 @@ public class ClassService {
         ClassEntity updated = classRepository.save(entity);
         return toDTO(updated);
     }
+
     public void eliminar(Long id) {
         ClassEntity entity = classRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Clase no encontrada con id: " + id));
@@ -67,6 +75,7 @@ public class ClassService {
         dto.setStatus(entity.getStatus());
         return dto;
     }
+
     private ClassEntity toEntity(ClassDTO dto) {
         ClassEntity entity = new ClassEntity();
         entity.setId(dto.getId());
