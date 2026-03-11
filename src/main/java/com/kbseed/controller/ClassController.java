@@ -20,4 +20,9 @@ public class ClassController {
     public List<ClassDTO> obtenerTodas() {
         return classService.obtenerTodas();
     }
+    
+    @PostMapping
+    public ClassDTO crear(@RequestBody ClassDTO dto) {
+        return classService.crear(dto);
+    }
 }

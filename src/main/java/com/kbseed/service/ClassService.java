@@ -22,6 +22,12 @@ public class ClassService {
                 .collect(Collectors.toList());
     }
 
+    public ClassDTO crear(ClassDTO dto) {
+        ClassEntity entity = toEntity(dto);
+        ClassEntity saved = classRepository.save(entity);
+        return toDTO(saved);
+    }
+
     private ClassDTO toDTO(ClassEntity entity) {
         ClassDTO dto = new ClassDTO();
         dto.setId(entity.getId());
@@ -36,5 +42,20 @@ public class ClassService {
         dto.setCapacityTotal(entity.getCapacityTotal());
         dto.setStatus(entity.getStatus());
         return dto;
+    }
+    private ClassEntity toEntity(ClassDTO dto) {
+        ClassEntity entity = new ClassEntity();
+        entity.setId(dto.getId());
+        entity.setStudioId(dto.getStudioId());
+        entity.setClassTypeName(dto.getClassTypeName());
+        entity.setRoomName(dto.getRoomName());
+        entity.setCoachUserName(dto.getCoachUserName());
+        entity.setClassDate(dto.getClassDate());
+        entity.setStartTime(dto.getStartTime());
+        entity.setEndTime(dto.getEndTime());
+        entity.setCapacity(dto.getCapacity());
+        entity.setCapacityTotal(dto.getCapacityTotal());
+        entity.setStatus(dto.getStatus());
+        return entity;
     }
 }
