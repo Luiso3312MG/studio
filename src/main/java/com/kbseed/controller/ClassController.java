@@ -2,11 +2,8 @@ package com.kbseed.controller;
 
 import com.kbseed.dto.ClassDTO;
 import com.kbseed.service.ClassService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
@@ -23,8 +20,24 @@ public class ClassController {
         return classService.obtenerTodas();
     }
 
+    @GetMapping("/{id}")
+    public ClassDTO obtenerPorId(@PathVariable Long id) {
+        return classService.obtenerPorId(id);
+    }
+
     @PostMapping
     public ClassDTO crear(@RequestBody ClassDTO dto) {
         return classService.crear(dto);
+    }
+
+    @PutMapping("/{id}")
+    public ClassDTO actualizar(@PathVariable Long id, @RequestBody ClassDTO dto) {
+        return classService.actualizar(id, dto);
+    }
+
+    @DeleteMapping("/{id}")
+    public String eliminar(@PathVariable Long id) {
+        classService.eliminar(id);
+        return "Clase eliminada correctamente";
     }
 }

@@ -27,6 +27,30 @@ public class ClassService {
         ClassEntity saved = classRepository.save(entity);
         return toDTO(saved);
     }
+    public ClassDTO actualizar(Long id, ClassDTO dto) {
+        ClassEntity entity = classRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Clase no encontrada con id: " + id));
+
+        entity.setStudioId(dto.getStudioId());
+        entity.setClassTypeName(dto.getClassTypeName());
+        entity.setRoomName(dto.getRoomName());
+        entity.setCoachUserName(dto.getCoachUserName());
+        entity.setClassDate(dto.getClassDate());
+        entity.setStartTime(dto.getStartTime());
+        entity.setEndTime(dto.getEndTime());
+        entity.setCapacity(dto.getCapacity());
+        entity.setCapacityTotal(dto.getCapacityTotal());
+        entity.setStatus(dto.getStatus());
+
+        ClassEntity updated = classRepository.save(entity);
+        return toDTO(updated);
+    }
+    public void eliminar(Long id) {
+        ClassEntity entity = classRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Clase no encontrada con id: " + id));
+
+        classRepository.delete(entity);
+    }
 
     private ClassDTO toDTO(ClassEntity entity) {
         ClassDTO dto = new ClassDTO();
