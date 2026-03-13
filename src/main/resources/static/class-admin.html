@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&display=swap"
+    rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            primary: "#E7C7C2",
+            "background-light": "#F5E9E7",
+            "background-dark": "#2B2B2B",
+            "accent-border": "#D6C3A5",
+            "text-main": "#2B2B2B"
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    body {
+      font-family: 'Manrope', sans-serif;
+    }
+
+    .sidebar-item-active {
+      background-color: #111111;
+      color: white;
+    }
+  </style>
+</head>
+
+<body class="bg-background-light text-text-main">
+  <div class="flex h-screen overflow-hidden">
+
+    <!-- Sidebar -->
+    <aside class="w-64 flex flex-col border-r border-accent-border bg-background-light px-4 py-6">
+      <div class="flex items-center gap-3 px-2 mb-10">
+        <div class="size-10 rounded-full bg-primary flex items-center justify-center text-white">
+          <span class="material-symbols-outlined">tune</span>
+        </div>
+        <div class="flex flex-col">
+          <h1 class="text-base font-bold leading-tight">Studio Admin</h1>
+          <p class="text-text-main/60 text-xs font-medium uppercase tracking-wider">Configuración</p>
+        </div>
+      </div>
+
+      <nav class="flex flex-col gap-2 grow">
+        <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-primary/20 transition-colors"
+          href="/index.html">
+          <span class="material-symbols-outlined">dashboard</span>
+          <span class="text-sm font-medium">Dashboard</span>
+        </a>
+
+        <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-primary/20 transition-colors"
+          href="/students.html">
+          <span class="material-symbols-outlined">group</span>
+          <span class="text-sm font-medium">Alumnos</span>
+        </a>
+
+        <a class="sidebar-item-active flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors"
+          href="/class-admin.html">
+          <span class="material-symbols-outlined">settings_applications</span>
+          <span class="text-sm font-semibold">Config. clases</span>
+        </a>
+      </nav>
+    </aside>
+
+    <!-- Main -->
+    <main class="flex-1 overflow-y-auto p-8">
+      <header class="mb-8">
+        <h2 class="text-4xl font-black tracking-tight">Configuración de Clases</h2>
+        <p class="text-text-main/60 text-lg mt-2">Administra salones, tipos de clase y programación de clases.</p>
+      </header>
+
+      <!-- Tabs -->
+      <div class="flex gap-3 mb-8">
+        <button class="tab-btn px-4 py-2 rounded-lg bg-black text-white font-bold" data-tab="rooms">Salones</button>
+        <button class="tab-btn px-4 py-2 rounded-lg bg-white border border-accent-border font-bold" data-tab="types">Tipos de clase</button>
+        <button class="tab-btn px-4 py-2 rounded-lg bg-white border border-accent-border font-bold" data-tab="schedule">Programar clases</button>
+      </div>
+
+      <!-- ROOMS -->
+      <section id="tab-rooms" class="tab-section">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="bg-white rounded-xl border border-accent-border shadow-sm p-6">
+            <h3 class="text-xl font-bold mb-4">Nuevo salón</h3>
+
+            <form id="form-room" class="space-y-4">
+              <div>
+                <label class="block text-sm font-bold mb-1">Nombre del salón</label>
+                <input id="room-name" type="text" class="w-full border border-accent-border rounded-lg px-3 py-2"
+                  placeholder="Ej. Sala 1" />
+              </div>
+
+              <div>
+                <label class="block text-sm font-bold mb-1">Capacidad</label>
+                <input id="room-capacity" type="number" min="1"
+                  class="w-full border border-accent-border rounded-lg px-3 py-2" placeholder="Ej. 10" />
+              </div>
+
+              <div>
+                <label class="block text-sm font-bold mb-1">Nota de ubicación</label>
+                <input id="room-note" type="text" class="w-full border border-accent-border rounded-lg px-3 py-2"
+                  placeholder="Ej. Segundo piso" />
+              </div>
+
+              <div class="flex items-center gap-2">
+                <input id="room-active" type="checkbox" checked />
+                <label for="room-active" class="text-sm font-medium">Activo</label>
+              </div>
+
+              <button type="submit"
+                class="px-4 py-2 rounded-lg bg-primary text-white font-bold hover:brightness-95">
+                Guardar salón
+              </button>
+            </form>
+          </div>
+
+          <div class="bg-white rounded-xl border border-accent-border shadow-sm p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-xl font-bold">Salones</h3>
+              <span id="rooms-count" class="text-sm text-text-main/60 font-medium">0 registros</span>
+            </div>
+
+            <div class="overflow-auto max-h-[400px]">
+              <table class="w-full text-left">
+                <thead>
+                  <tr class="border-b border-accent-border">
+                    <th class="py-3 text-xs uppercase text-text-main/60">Nombre</th>
+                    <th class="py-3 text-xs uppercase text-text-main/60">Capacidad</th>
+                    <th class="py-3 text-xs uppercase text-text-main/60">Activo</th>
+                  </tr>
+                </thead>
+                <tbody id="rooms-table-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CLASS TYPES -->
+      <section id="tab-types" class="tab-section hidden">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="bg-white rounded-xl border border-accent-border shadow-sm p-6">
+            <h3 class="text-xl font-bold mb-4">Nuevo tipo de clase</h3>
+
+            <form id="form-class-type" class="space-y-4">
+              <div>
+                <label class="block text-sm font-bold mb-1">Nombre</label>
+                <input id="type-name" type="text" class="w-full border border-accent-border rounded-lg px-3 py-2"
+                  placeholder="Ej. Pole Beginner" />
+              </div>
+
+              <div>
+                <label class="block text-sm font-bold mb-1">Descripción</label>
+                <input id="type-description" type="text"
+                  class="w-full border border-accent-border rounded-lg px-3 py-2"
+                  placeholder="Ej. Clase para principiantes" />
+              </div>
+
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-bold mb-1">Duración (min)</label>
+                  <input id="type-duration" type="number" min="1"
+                    class="w-full border border-accent-border rounded-lg px-3 py-2"
+                    placeholder="60" />
+                </div>
+
+                <div>
+                  <label class="block text-sm font-bold mb-1">Capacidad</label>
+                  <input id="type-capacity" type="number" min="1"
+                    class="w-full border border-accent-border rounded-lg px-3 py-2"
+                    placeholder="10" />
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-sm font-bold mb-1">Nivel</label>
+                <select id="type-level" class="w-full border border-accent-border rounded-lg px-3 py-2">
+                  <option value="ALL">ALL</option>
+                  <option value="BEGINNER">BEGINNER</option>
+                  <option value="INTERMEDIATE">INTERMEDIATE</option>
+                  <option value="ADVANCED">ADVANCED</option>
+                </select>
+              </div>
+
+              <div class="flex items-center gap-2">
+                <input id="type-active" type="checkbox" checked />
+                <label for="type-active" class="text-sm font-medium">Activo</label>
+              </div>
+
+              <button type="submit"
+                class="px-4 py-2 rounded-lg bg-primary text-white font-bold hover:brightness-95">
+                Guardar tipo de clase
+              </button>
+            </form>
+          </div>
+
+          <div class="bg-white rounded-xl border border-accent-border shadow-sm p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-xl font-bold">Tipos de clase</h3>
+              <span id="types-count" class="text-sm text-text-main/60 font-medium">0 registros</span>
+            </div>
+
+            <div class="overflow-auto max-h-[400px]">
+              <table class="w-full text-left">
+                <thead>
+                  <tr class="border-b border-accent-border">
+                    <th class="py-3 text-xs uppercase text-text-main/60">Nombre</th>
+                    <th class="py-3 text-xs uppercase text-text-main/60">Duración</th>
+                    <th class="py-3 text-xs uppercase text-text-main/60">Cupo</th>
+                    <th class="py-3 text-xs uppercase text-text-main/60">Nivel</th>
+                  </tr>
+                </thead>
+                <tbody id="types-table-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCHEDULE -->
+      <section id="tab-schedule" class="tab-section hidden">
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+          <div class="bg-white rounded-xl border border-accent-border shadow-sm p-6">
+            <h3 class="text-xl font-bold mb-4">Programar clase única</h3>
+
+            <form class="space-y-4" id="form-single-class">
+              <div>
+                <label class="block text-sm font-bold mb-1">Tipo de clase</label>
+                <select id="single-class-type" class="w-full border border-accent-border rounded-lg px-3 py-2"></select>
+              </div>
+
+              <div>
+                <label class="block text-sm font-bold mb-1">Salón</label>
+                <select id="single-room" class="w-full border border-accent-border rounded-lg px-3 py-2"></select>
+              </div>
+
+              <div>
+                <label class="block text-sm font-bold mb-1">Instructor</label>
+                <input id="single-coach" type="text" class="w-full border border-accent-border rounded-lg px-3 py-2"
+                  placeholder="Ej. Carla" />
+              </div>
+
+              <div class="grid grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-sm font-bold mb-1">Fecha</label>
+                  <input id="single-date" type="date" class="w-full border border-accent-border rounded-lg px-3 py-2" />
+                </div>
+
+                <div>
+                  <label class="block text-sm font-bold mb-1">Hora inicio</label>
+                  <input id="single-start" type="time" class="w-full border border-accent-border rounded-lg px-3 py-2" />
+                </div>
+
+                <div>
+                  <label class="block text-sm font-bold mb-1">Hora fin</label>
+                  <input id="single-end" type="time" class="w-full border border-accent-border rounded-lg px-3 py-2" />
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-sm font-bold mb-1">Cupo final</label>
+                <input id="single-capacity" type="number" min="1"
+                  class="w-full border border-accent-border rounded-lg px-3 py-2" />
+              </div>
+
+              <button type="submit"
+                class="px-4 py-2 rounded-lg bg-primary text-white font-bold hover:brightness-95">
+                Crear clase única
+              </button>
+            </form>
+          </div>
+
+          <div class="bg-white rounded-xl border border-accent-border shadow-sm p-6">
+            <h3 class="text-xl font-bold mb-4">Programar clases recurrentes</h3>
+
+            <form class="space-y-4" id="form-recurring-class">
+              <div>
+                <label class="block text-sm font-bold mb-1">Tipo de clase</label>
+                <select id="recurring-class-type" class="w-full border border-accent-border rounded-lg px-3 py-2"></select>
+              </div>
+
+              <div>
+                <label class="block text-sm font-bold mb-1">Salón</label>
+                <select id="recurring-room" class="w-full border border-accent-border rounded-lg px-3 py-2"></select>
+              </div>
+
+              <div>
+                <label class="block text-sm font-bold mb-1">Instructor</label>
+                <input id="recurring-coach" type="text" class="w-full border border-accent-border rounded-lg px-3 py-2"
+                  placeholder="Ej. Carla" />
+              </div>
+
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-bold mb-1">Fecha inicio</label>
+                  <input id="recurring-start-date" type="date" class="w-full border border-accent-border rounded-lg px-3 py-2" />
+                </div>
+
+                <div>
+                  <label class="block text-sm font-bold mb-1">Fecha fin</label>
+                  <input id="recurring-end-date" type="date" class="w-full border border-accent-border rounded-lg px-3 py-2" />
+                </div>
+              </div>
+
+              <div class="grid grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-sm font-bold mb-1">Hora inicio</label>
+                  <input id="recurring-start-time" type="time" class="w-full border border-accent-border rounded-lg px-3 py-2" />
+                </div>
+
+                <div>
+                  <label class="block text-sm font-bold mb-1">Hora fin</label>
+                  <input id="recurring-end-time" type="time" class="w-full border border-accent-border rounded-lg px-3 py-2" />
+                </div>
+
+                <div>
+                  <label class="block text-sm font-bold mb-1">Cupo final</label>
+                  <input id="recurring-capacity" type="number" min="1"
+                    class="w-full border border-accent-border rounded-lg px-3 py-2" />
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-sm font-bold mb-2">Días de la semana</label>
+                <div class="grid grid-cols-4 gap-3 text-sm">
+                  <label class="flex items-center gap-2"><input type="checkbox" value="1" class="weekday"> Lunes</label>
+                  <label class="flex items-center gap-2"><input type="checkbox" value="2" class="weekday"> Martes</label>
+                  <label class="flex items-center gap-2"><input type="checkbox" value="3" class="weekday"> Miércoles</label>
+                  <label class="flex items-center gap-2"><input type="checkbox" value="4" class="weekday"> Jueves</label>
+                  <label class="flex items-center gap-2"><input type="checkbox" value="5" class="weekday"> Viernes</label>
+                  <label class="flex items-center gap-2"><input type="checkbox" value="6" class="weekday"> Sábado</label>
+                  <label class="flex items-center gap-2"><input type="checkbox" value="0" class="weekday"> Domingo</label>
+                </div>
+              </div>
+
+              <button type="submit"
+                class="px-4 py-2 rounded-lg bg-black text-white font-bold hover:brightness-95">
+                Generar clases del rango
+              </button>
+            </form>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    let studioId = 1;
+    let roomsData = [];
+    let classTypesData = [];
+
+    document.addEventListener("DOMContentLoaded", () => {
+      initTabs();
+      initMockForms();
+      renderRooms();
+      renderClassTypes();
+      fillSelects();
+    });
+
+    function initTabs() {
+      const buttons = document.querySelectorAll(".tab-btn");
+      const sections = document.querySelectorAll(".tab-section");
+
+      buttons.forEach(btn => {
+        btn.addEventListener("click", () => {
+          buttons.forEach(b => {
+            b.classList.remove("bg-black", "text-white");
+            b.classList.add("bg-white", "border", "border-accent-border");
+          });
+
+          btn.classList.remove("bg-white", "border", "border-accent-border");
+          btn.classList.add("bg-black", "text-white");
+
+          const tab = btn.dataset.tab;
+          sections.forEach(section => section.classList.add("hidden"));
+          document.getElementById(`tab-${tab}`).classList.remove("hidden");
+        });
+      });
+    }
+
+    function initMockForms() {
+      document.getElementById("form-room").addEventListener("submit", (e) => {
+        e.preventDefault();
+
+        const room = {
+          id: Date.now(),
+          name: document.getElementById("room-name").value,
+          capacity: Number(document.getElementById("room-capacity").value),
+          locationNote: document.getElementById("room-note").value,
+          isActive: document.getElementById("room-active").checked
+        };
+
+        roomsData.push(room);
+        renderRooms();
+        fillSelects();
+        e.target.reset();
+      });
+
+      document.getElementById("form-class-type").addEventListener("submit", (e) => {
+        e.preventDefault();
+
+        const classType = {
+          id: Date.now(),
+          name: document.getElementById("type-name").value,
+          description: document.getElementById("type-description").value,
+          durationMinutes: Number(document.getElementById("type-duration").value),
+          capacity: Number(document.getElementById("type-capacity").value),
+          level: document.getElementById("type-level").value,
+          isActive: document.getElementById("type-active").checked
+        };
+
+        classTypesData.push(classType);
+        renderClassTypes();
+        fillSelects();
+        e.target.reset();
+      });
+
+      document.getElementById("form-single-class").addEventListener("submit", (e) => {
+        e.preventDefault();
+        alert("Aquí conectaremos el POST real para crear clase única.");
+      });
+
+      document.getElementById("form-recurring-class").addEventListener("submit", (e) => {
+        e.preventDefault();
+
+        const days = Array.from(document.querySelectorAll(".weekday:checked")).map(el => el.value);
+        if (days.length === 0) {
+          alert("Selecciona al menos un día de la semana");
+          return;
+        }
+
+        alert("Aquí conectaremos el endpoint backend para generar clases recurrentes.");
+      });
+    }
+
+    function renderRooms() {
+      const tbody = document.getElementById("rooms-table-body");
+      const count = document.getElementById("rooms-count");
+      tbody.innerHTML = "";
+
+      if (roomsData.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="3" class="py-6 text-center text-text-main/50">Sin salones todavía</td>
+          </tr>
+        `;
+        count.textContent = "0 registros";
+        return;
+      }
+
+      roomsData.forEach(room => {
+        tbody.innerHTML += `
+          <tr class="border-b border-accent-border/40">
+            <td class="py-3">${room.name}</td>
+            <td class="py-3">${room.capacity}</td>
+            <td class="py-3">${room.isActive ? "Sí" : "No"}</td>
+          </tr>
+        `;
+      });
+
+      count.textContent = `${roomsData.length} registros`;
+    }
+
+    function renderClassTypes() {
+      const tbody = document.getElementById("types-table-body");
+      const count = document.getElementById("types-count");
+      tbody.innerHTML = "";
+
+      if (classTypesData.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="4" class="py-6 text-center text-text-main/50">Sin tipos de clase todavía</td>
+          </tr>
+        `;
+        count.textContent = "0 registros";
+        return;
+      }
+
+      classTypesData.forEach(type => {
+        tbody.innerHTML += `
+          <tr class="border-b border-accent-border/40">
+            <td class="py-3">${type.name}</td>
+            <td class="py-3">${type.durationMinutes} min</td>
+            <td class="py-3">${type.capacity}</td>
+            <td class="py-3">${type.level}</td>
+          </tr>
+        `;
+      });
+
+      count.textContent = `${classTypesData.length} registros`;
+    }
+
+    function fillSelects() {
+      const roomSelectIds = ["single-room", "recurring-room"];
+      const classTypeSelectIds = ["single-class-type", "recurring-class-type"];
+
+      roomSelectIds.forEach(id => {
+        const select = document.getElementById(id);
+        if (!select) return;
+
+        select.innerHTML = `<option value="">Seleccione salón</option>`;
+        roomsData.forEach(room => {
+          if (room.isActive) {
+            select.innerHTML += `<option value="${room.id}">${room.name} (${room.capacity})</option>`;
+          }
+        });
+      });
+
+      classTypeSelectIds.forEach(id => {
+        const select = document.getElementById(id);
+        if (!select) return;
+
+        select.innerHTML = `<option value="">Seleccione tipo</option>`;
+        classTypesData.forEach(type => {
+          if (type.isActive) {
+            select.innerHTML += `<option value="${type.id}" data-capacity="${type.capacity}" data-duration="${type.durationMinutes}">${type.name}</option>`;
+          }
+        });
+      });
+    }
+  </script>
+</body>
+
+</html>

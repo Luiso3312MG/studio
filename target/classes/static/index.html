@@ -13,7 +13,7 @@
     rel="stylesheet" />
 
   <script>
-    let themeColors = {
+    const themeColors = {
       background_color: "#E7C7C2",
       background_light: "#F5E9E7",
       background_dark: "#2B2B2B",
@@ -55,140 +55,116 @@
 </head>
 
 <body class="bg-background-light dark:bg-background-dark text-text-main">
-  <div id="layout-dashboard" class="flex h-screen overflow-hidden">
+  <div class="flex h-screen overflow-hidden">
 
     <!-- Sidebar -->
-    <aside id="sidebar-principal"
-      class="w-64 flex flex-col border-r border-accent-border bg-background-light px-4 py-6">
-      <div id="contenedor-logo-estudio" class="flex items-center gap-3 px-2 mb-10">
-        <div id="logo-estudio" class="size-10 rounded-full bg-primary flex items-center justify-center text-white"
+    <aside class="w-64 flex flex-col border-r border-accent-border bg-background-light px-4 py-6">
+      <div class="flex items-center gap-3 px-2 mb-10">
+        <div class="size-10 rounded-full bg-primary flex items-center justify-center text-white"
           style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuChF50UObrTykE0eCJ0nJlyZqNUPwaGMcJINJBuxuCO8c-jZXj6xZmePUiTKoeMfVb47YuRnnOxv3IW7MvbjvhI6j6WlWzGh23SlY9jayQzUxSqGW4i0L0eVwQ-XAZ0mSfXuT1Kd8-IyfHIi-u53xogg6kBEQWhvK_XmuLD5C9UPcCpqaFqn5jhGsCwWK1U3vivqzibrcaIkNaVy4KQuw8kCA3DMohqQQepd_KmnVoJC_zZVrPkL3F1MMrFdNf4-1Bns-U_DpTwMHJ8'); background-size: cover;">
         </div>
 
         <div class="flex flex-col">
-          <h1 id="titulo-estudio-admin" class="text-text-main text-base font-bold leading-tight">Studio Admin</h1>
-          <p id="subtitulo-estudio-admin" class="text-text-main/60 text-xs font-medium uppercase tracking-wider">
-            Pole &amp; Aerial
-          </p>
+          <h1 class="text-text-main text-base font-bold leading-tight">Studio Admin</h1>
+          <p class="text-text-main/60 text-xs font-medium uppercase tracking-wider">Pole &amp; Aerial</p>
         </div>
       </div>
 
-      <nav id="nav-principal" class="flex flex-col gap-2 grow">
-        <a id="link-dashboard"
-          class="sidebar-item-active flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors"
+      <nav class="flex flex-col gap-2 grow">
+        <a class="sidebar-item-active flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors"
           href="/index.html">
-          <span class="material-symbols-outlined text-text-main">dashboard</span>
-          <span class="text-text-main text-sm font-semibold">Dashboard</span>
+          <span class="material-symbols-outlined text-white">dashboard</span>
+          <span class="text-white text-sm font-semibold">Dashboard</span>
         </a>
 
-        <a id="link-alumnos"
-          class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-primary/20 transition-colors"
+        <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-primary/20 transition-colors"
           href="/students.html">
           <span class="material-symbols-outlined text-text-main">group</span>
           <span class="text-text-main text-sm font-medium">Alumnos</span>
         </a>
 
-        <a id="link-horario"
-          class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-primary/20 transition-colors"
-          href="/index.html">
-          <span class="material-symbols-outlined text-text-main">calendar_month</span>
-          <span class="text-text-main text-sm font-medium">Horario</span>
+        <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-primary/20 transition-colors"
+          href="/class-admin.html">
+          <span class="material-symbols-outlined text-text-main">settings_applications</span>
+          <span class="text-text-main text-sm font-medium">Config. clases</span>
         </a>
 
-        <a id="link-reportes"
-          class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-primary/20 transition-colors"
-          href="#">
+        <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-primary/20 transition-colors" href="#">
           <span class="material-symbols-outlined text-text-main">analytics</span>
           <span class="text-text-main text-sm font-medium">Reportes</span>
         </a>
       </nav>
 
-      <div id="footer-sidebar-admin" class="mt-auto pt-6 border-t border-accent-border">
+      <div class="mt-auto pt-6 border-t border-accent-border">
         <div class="flex items-center gap-3 px-2">
-          <div id="contenedor-avatar-admin"
-            class="size-8 rounded-full bg-accent-border flex items-center justify-center overflow-hidden">
-            <img id="img-avatar-admin" alt="Admin avatar" class="w-full h-full object-cover"
+          <div class="size-8 rounded-full bg-accent-border flex items-center justify-center overflow-hidden">
+            <img alt="Admin avatar" class="w-full h-full object-cover"
               src="https://lh3.googleusercontent.com/aida-public/AB6AXuBtqjbAJVy5wJGRfFYHfE2ZP5epOntDQjmQvkc-MUy1OqB09Nf4UEc_yGtMJ57wsbYiuUIFcx_XjaS-C7Nng0wCqI5CCyruaPb4bttJTo-fzajIxbqC1e8rKr--jfNxsfSNDz2VYnqhR1zgNocOpg9iaVyZvYyhGBcc9MhdRnuIfXA1lRlGF7ypidATcdNULid9dbX9XSDv3LrKjSjVcnHtfaxk5UvDtUYILkbipdy2pgogiNTeQ0wpU2xgbUE9Cr2YuXayl41gPzj1" />
           </div>
 
           <div class="flex flex-col overflow-hidden">
-            <p id="nombre-admin" class="text-text-main text-sm font-semibold truncate">Lucía Méndez</p>
-            <p id="rol-admin" class="text-text-main/50 text-xs truncate">Admin Principal</p>
+            <p class="text-text-main text-sm font-semibold truncate">Lucía Méndez</p>
+            <p class="text-text-main/50 text-xs truncate">Admin Principal</p>
           </div>
-
-          <button id="btn-configuracion-admin" type="button"
-            class="material-symbols-outlined text-text-main/40 text-sm ml-auto cursor-pointer bg-transparent border-0">
-            settings
-          </button>
         </div>
       </div>
     </aside>
 
     <!-- Main Content -->
-    <main id="main-dashboard" class="flex-1 overflow-y-auto bg-background-light p-8">
-      <header id="header-dashboard" class="mb-8 flex justify-between items-end">
+    <main class="flex-1 overflow-y-auto bg-background-light p-8">
+      <header class="mb-8 flex justify-between items-end">
         <div>
-          <h2 id="titulo-dashboard" class="text-text-main text-4xl font-black leading-tight tracking-tight">
-            Dashboard
-          </h2>
-          <p id="subtitulo-dashboard" class="text-text-main/60 text-lg font-normal">
-            Resumen de actividad para hoy
-          </p>
+          <h2 class="text-text-main text-4xl font-black leading-tight tracking-tight">Dashboard</h2>
+          <p class="text-text-main/60 text-lg font-normal">Resumen operativo del día</p>
         </div>
 
-        <div id="acciones-dashboard" class="flex gap-3">
-          <button id="btn-exportar-dashboard" type="button"
+        <div class="flex gap-3">
+          <button type="button"
             class="flex items-center gap-2 bg-white border border-accent-border px-4 py-2 rounded-lg text-sm font-semibold hover:bg-slate-50 transition-all">
             <span class="material-symbols-outlined text-sm">download</span>
             Exportar
-          </button>
-
-          <button id="btn-abrir-modal-nueva-clase" type="button"
-            class="flex items-center gap-2 bg-primary px-4 py-2 rounded-lg text-sm font-bold text-white shadow-sm hover:brightness-95 transition-all">
-            <span class="material-symbols-outlined text-sm">add</span>
-            Nueva Clase
           </button>
         </div>
       </header>
 
       <!-- Stats Grid -->
-      <section id="seccion-estadisticas" class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-        <div id="card-total-alumnos"
-          class="bg-white rounded-xl p-6 border border-accent-border shadow-sm flex flex-col justify-between h-32 relative overflow-hidden">
+      <section class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+        <div class="bg-white rounded-xl p-6 border border-accent-border shadow-sm flex flex-col justify-between h-32 relative overflow-hidden">
           <div class="z-10">
             <p class="text-text-main/60 text-sm font-bold uppercase tracking-wide">Total Alumnos</p>
             <p id="valor-total-alumnos" class="text-text-main text-3xl font-black mt-1">0</p>
           </div>
           <div class="z-10 flex items-center text-green-600 text-sm font-bold mt-2">
-            <span class="material-symbols-outlined text-sm mr-1">groups</span> alumnos activos en studio
+            <span class="material-symbols-outlined text-sm mr-1">groups</span>
+            alumnos activos en studio
           </div>
           <div class="absolute -right-4 -bottom-4 opacity-5 pointer-events-none">
             <span class="material-symbols-outlined text-[80px]">groups</span>
           </div>
         </div>
 
-        <div id="card-clases-hoy"
-          class="bg-white rounded-xl p-6 border border-accent-border shadow-sm flex flex-col justify-between h-32 relative overflow-hidden">
+        <div class="bg-white rounded-xl p-6 border border-accent-border shadow-sm flex flex-col justify-between h-32 relative overflow-hidden">
           <div class="z-10">
             <p class="text-text-main/60 text-sm font-bold uppercase tracking-wide">Clases Hoy</p>
             <p id="valor-clases-hoy" class="text-text-main text-3xl font-black mt-1">0</p>
           </div>
           <div class="z-10 flex items-center text-blue-600 text-sm font-bold mt-2">
-            <span class="material-symbols-outlined text-sm mr-1">event</span> clases del día seleccionado
+            <span class="material-symbols-outlined text-sm mr-1">event</span>
+            clases del día seleccionado
           </div>
           <div class="absolute -right-4 -bottom-4 opacity-5 pointer-events-none">
             <span class="material-symbols-outlined text-[80px]">history_edu</span>
           </div>
         </div>
 
-        <div id="card-creditos-asignados"
-          class="bg-white rounded-xl p-6 border border-accent-border shadow-sm flex flex-col justify-between h-32 relative overflow-hidden">
+        <div class="bg-white rounded-xl p-6 border border-accent-border shadow-sm flex flex-col justify-between h-32 relative overflow-hidden">
           <div class="z-10">
             <p class="text-text-main/60 text-sm font-bold uppercase tracking-wide">Reservas Posibles</p>
-            <p id="valor-creditos-asignados" class="text-text-main text-3xl font-black mt-1">-</p>
+            <p class="text-text-main text-3xl font-black mt-1">-</p>
           </div>
           <div class="z-10 flex items-center text-text-main/60 text-sm font-bold mt-2">
-            <span class="material-symbols-outlined text-sm mr-1">confirmation_number</span> pendiente integrar membresías
+            <span class="material-symbols-outlined text-sm mr-1">confirmation_number</span>
+            pendiente integrar membresías
           </div>
           <div class="absolute -right-4 -bottom-4 opacity-5 pointer-events-none">
             <span class="material-symbols-outlined text-[80px]">confirmation_number</span>
@@ -197,16 +173,15 @@
       </section>
 
       <!-- Classes Section -->
-      <section id="seccion-clases-hoy"
-        class="bg-white rounded-xl border border-accent-border shadow-sm overflow-hidden">
+      <section class="bg-white rounded-xl border border-accent-border shadow-sm overflow-hidden">
         <div class="px-6 py-5 border-b border-accent-border flex justify-between items-center">
-          <h3 id="titulo-seccion-clases-hoy" class="text-text-main text-xl font-bold">Clases</h3>
+          <h3 class="text-text-main text-xl font-bold">Clases</h3>
           <input id="fecha-seleccionada" type="date"
             class="text-sm text-text-main border border-accent-border rounded px-2 py-1" />
         </div>
 
         <div class="overflow-x-auto">
-          <table id="tabla-clases-hoy" class="w-full text-left">
+          <table class="w-full text-left">
             <thead>
               <tr class="bg-background-light/50">
                 <th class="px-6 py-4 text-text-main/60 text-xs font-bold uppercase tracking-wider">Horario</th>
@@ -222,88 +197,21 @@
         </div>
 
         <div class="px-6 py-4 bg-background-light/20 text-center">
-          <a id="link-ver-semana-clases" class="text-sm font-bold text-text-main hover:underline" href="#">
+          <a class="text-sm font-bold text-text-main hover:underline" href="#">
             Ver todas las clases de la semana
           </a>
         </div>
       </section>
 
-      <footer id="footer-dashboard" class="mt-12 text-center text-text-main/40 text-xs">
+      <footer class="mt-12 text-center text-text-main/40 text-xs">
         <p>© 2024 Studio Admin - Plataforma de Gestión de Estudios de Danza. Todos los derechos reservados.</p>
       </footer>
     </main>
   </div>
 
-  <!-- Modal Registrar Nueva Clase -->
-  <div id="modal-nueva-clase" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/30">
-    <div id="contenedor-modal-nueva-clase"
-      class="bg-white dark:bg-slate-800 w-full max-w-2xl rounded-xl shadow-lg p-6 relative">
-      <button id="btn-cerrar-modal-nueva-clase" type="button"
-        class="absolute top-4 right-4 text-text-main/50 hover:text-text-main">
-        ×
-      </button>
-
-      <h2 id="titulo-modal-nueva-clase" class="text-text-main text-2xl font-bold mb-4">
-        Registrar Nueva Clase
-      </h2>
-
-      <form id="form-nueva-clase">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label for="select-tipo-clase" class="block text-sm font-bold mb-1">Tipo de clase</label>
-            <select id="select-tipo-clase" name="tipo" class="w-full border border-accent-border rounded-lg px-3 py-2">
-              <option disabled selected>Seleccione disciplina</option>
-              <option>Pole Dance</option>
-              <option>Barre Sculpt</option>
-              <option>Aerial Silks</option>
-              <option>Pole Exotic</option>
-            </select>
-          </div>
-
-          <div>
-            <label for="input-instructor-clase" class="block text-sm font-bold mb-1">Instructor(a)</label>
-            <input id="input-instructor-clase" name="instructor" type="text"
-              class="w-full border border-accent-border rounded-lg px-3 py-2" placeholder="Nombre del instructor" />
-          </div>
-
-          <div>
-            <label for="input-fecha-clase" class="block text-sm font-bold mb-1">Fecha</label>
-            <input id="input-fecha-clase" name="fecha" type="date"
-              class="w-full border border-accent-border rounded-lg px-3 py-2" />
-          </div>
-
-          <div>
-            <label for="input-hora-inicio-clase" class="block text-sm font-bold mb-1">Inicio</label>
-            <input id="input-hora-inicio-clase" name="inicio" type="time"
-              class="w-full border border-accent-border rounded-lg px-3 py-2" />
-          </div>
-
-          <div>
-            <label for="input-hora-fin-clase" class="block text-sm font-bold mb-1">Término</label>
-            <input id="input-hora-fin-clase" name="fin" type="time"
-              class="w-full border border-accent-border rounded-lg px-3 py-2" />
-          </div>
-        </div>
-
-        <div class="flex justify-end gap-3 mt-6">
-          <button id="btn-cancelar-nueva-clase" type="button"
-            class="px-4 py-2 rounded-lg bg-gray-200 text-text-main hover:bg-gray-300">
-            Cancelar
-          </button>
-
-          <button id="btn-guardar-nueva-clase" type="submit"
-            class="px-4 py-2 rounded-lg bg-primary text-white font-bold hover:brightness-95">
-            Crear Clase
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-
   <!-- Modal Inscribir Alumno -->
   <div id="modal-inscribir-alumno" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30 backdrop-blur-sm">
     <div class="bg-white w-full max-w-lg rounded-xl shadow-2xl overflow-hidden border border-accent-border">
-
       <div class="p-6 border-b border-accent-border">
         <div class="flex justify-between items-start mb-2">
           <h2 class="text-2xl font-bold text-text-main tracking-tight">Inscribir Alumno a Clase</h2>
@@ -336,8 +244,7 @@
           <p class="text-xs font-bold uppercase tracking-wider text-text-main/40 mb-3 px-1">
             Resultados de búsqueda
           </p>
-          <div id="lista-alumnos-inscripcion" class="space-y-1 max-h-80 overflow-y-auto">
-          </div>
+          <div id="lista-alumnos-inscripcion" class="space-y-1 max-h-80 overflow-y-auto"></div>
         </div>
       </div>
 
@@ -366,8 +273,6 @@
 
     document.addEventListener("DOMContentLoaded", async () => {
       await initPage();
-      initClassModal();
-      initClassForm();
       initEnrollmentModal();
     });
 
@@ -470,9 +375,7 @@
             <td class="px-6 py-5">
               <div class="flex items-center gap-2">
                 <span class="size-2 rounded-full bg-[#D6E7C2]"></span>
-                <span class="text-text-main font-semibold">
-                  ${clase.classTypeName}
-                </span>
+                <span class="text-text-main font-semibold">${clase.classTypeName}</span>
               </div>
             </td>
 
@@ -549,86 +452,6 @@
       const first = firstName ? firstName.charAt(0).toUpperCase() : "";
       const last = lastName ? lastName.charAt(0).toUpperCase() : "";
       return `${first}${last}`;
-    }
-
-    function initClassModal() {
-      const modal = document.getElementById("modal-nueva-clase");
-      const btnAbrir = document.getElementById("btn-abrir-modal-nueva-clase");
-      const btnCerrar = document.getElementById("btn-cerrar-modal-nueva-clase");
-      const btnCancelar = document.getElementById("btn-cancelar-nueva-clase");
-      const contenedorModal = document.getElementById("contenedor-modal-nueva-clase");
-
-      function abrirModal() {
-        modal.classList.remove("hidden");
-      }
-
-      function cerrarModal() {
-        modal.classList.add("hidden");
-      }
-
-      btnAbrir?.addEventListener("click", abrirModal);
-      btnCerrar?.addEventListener("click", cerrarModal);
-      btnCancelar?.addEventListener("click", cerrarModal);
-
-      modal?.addEventListener("click", (event) => {
-        if (event.target === modal) cerrarModal();
-      });
-
-      contenedorModal?.addEventListener("click", (event) => {
-        event.stopPropagation();
-      });
-    }
-
-    function initClassForm() {
-      const formNuevaClase = document.getElementById("form-nueva-clase");
-
-      formNuevaClase?.addEventListener("submit", async (event) => {
-        event.preventDefault();
-
-        const payload = {
-          studioId: studioId,
-          classTypeName: document.getElementById("select-tipo-clase").value,
-          roomName: "Sala 1",
-          coachUserName: document.getElementById("input-instructor-clase").value,
-          classDate: document.getElementById("input-fecha-clase").value,
-          startTime: document.getElementById("input-hora-inicio-clase").value + ":00",
-          endTime: document.getElementById("input-hora-fin-clase").value + ":00",
-          capacity: 10,
-          capacityTotal: 10,
-          status: "DISPONIBLE"
-        };
-
-        try {
-          const response = await fetch("/api/classes", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify(payload)
-          });
-
-          if (!response.ok) {
-            const text = await response.text();
-            console.error("Error creando clase:", response.status, text);
-            alert("No se pudo crear la clase");
-            return;
-          }
-
-          await response.json();
-
-          document.getElementById("modal-nueva-clase").classList.add("hidden");
-          formNuevaClase.reset();
-
-          if (payload.classDate === selectedDate) {
-            await loadClasses();
-          } else {
-            alert("Clase creada correctamente");
-          }
-        } catch (error) {
-          console.error("Error en POST /api/classes:", error);
-          alert("Ocurrió un error al crear la clase");
-        }
-      });
     }
 
     function initMenuActions() {
