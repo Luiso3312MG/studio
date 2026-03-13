@@ -12,6 +12,31 @@
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
     rel="stylesheet" />
 
+  <script>
+    let themeColors = {
+      background_color: "#E7C7C2",
+      background_light: "#F5E9E7",
+      background_dark: "#2B2B2B",
+      line_color: "#D6C3A5",
+      text_color: "#2B2B2B"
+    };
+
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            primary: themeColors.background_color,
+            "background-light": themeColors.background_light,
+            "background-dark": themeColors.background_dark,
+            "accent-border": themeColors.line_color,
+            "text-main": themeColors.text_color
+          }
+        }
+      }
+    };
+  </script>
+
   <style>
     :root {
       --text: #000000;
@@ -27,8 +52,6 @@
       background-color: var(--primary);
     }
   </style>
-
-
 </head>
 
 <body class="bg-background-light dark:bg-background-dark text-text-main">
@@ -39,7 +62,6 @@
       class="w-64 flex flex-col border-r border-accent-border bg-background-light px-4 py-6">
       <div id="contenedor-logo-estudio" class="flex items-center gap-3 px-2 mb-10">
         <div id="logo-estudio" class="size-10 rounded-full bg-primary flex items-center justify-center text-white"
-          data-alt="Logo minimalista de estudio de danza aérea"
           style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuChF50UObrTykE0eCJ0nJlyZqNUPwaGMcJINJBuxuCO8c-jZXj6xZmePUiTKoeMfVb47YuRnnOxv3IW7MvbjvhI6j6WlWzGh23SlY9jayQzUxSqGW4i0L0eVwQ-XAZ0mSfXuT1Kd8-IyfHIi-u53xogg6kBEQWhvK_XmuLD5C9UPcCpqaFqn5jhGsCwWK1U3vivqzibrcaIkNaVy4KQuw8kCA3DMohqQQepd_KmnVoJC_zZVrPkL3F1MMrFdNf4-1Bns-U_DpTwMHJ8'); background-size: cover;">
         </div>
 
@@ -53,25 +75,29 @@
 
       <nav id="nav-principal" class="flex flex-col gap-2 grow">
         <a id="link-dashboard"
-          class="sidebar-item-active flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors" href="/index.html">
+          class="sidebar-item-active flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors"
+          href="/index.html">
           <span class="material-symbols-outlined text-text-main">dashboard</span>
           <span class="text-text-main text-sm font-semibold">Dashboard</span>
         </a>
 
         <a id="link-alumnos"
-          class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-primary/20 transition-colors" href="/students.html">
+          class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-primary/20 transition-colors"
+          href="/students.html">
           <span class="material-symbols-outlined text-text-main">group</span>
           <span class="text-text-main text-sm font-medium">Alumnos</span>
         </a>
 
         <a id="link-horario"
-          class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-primary/20 transition-colors" href="#">
+          class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-primary/20 transition-colors"
+          href="/index.html">
           <span class="material-symbols-outlined text-text-main">calendar_month</span>
           <span class="text-text-main text-sm font-medium">Horario</span>
         </a>
 
         <a id="link-reportes"
-          class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-primary/20 transition-colors" href="#">
+          class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-primary/20 transition-colors"
+          href="#">
           <span class="material-symbols-outlined text-text-main">analytics</span>
           <span class="text-text-main text-sm font-medium">Reportes</span>
         </a>
@@ -82,7 +108,6 @@
           <div id="contenedor-avatar-admin"
             class="size-8 rounded-full bg-accent-border flex items-center justify-center overflow-hidden">
             <img id="img-avatar-admin" alt="Admin avatar" class="w-full h-full object-cover"
-              data-alt="Foto de perfil del administrador"
               src="https://lh3.googleusercontent.com/aida-public/AB6AXuBtqjbAJVy5wJGRfFYHfE2ZP5epOntDQjmQvkc-MUy1OqB09Nf4UEc_yGtMJ57wsbYiuUIFcx_XjaS-C7Nng0wCqI5CCyruaPb4bttJTo-fzajIxbqC1e8rKr--jfNxsfSNDz2VYnqhR1zgNocOpg9iaVyZvYyhGBcc9MhdRnuIfXA1lRlGF7ypidATcdNULid9dbX9XSDv3LrKjSjVcnHtfaxk5UvDtUYILkbipdy2pgogiNTeQ0wpU2xgbUE9Cr2YuXayl41gPzj1" />
           </div>
 
@@ -119,7 +144,7 @@
           </button>
 
           <button id="btn-abrir-modal-nueva-clase" type="button"
-            class="flex items-center gap-2 bg-primary px-4 py-2 rounded-lg text-sm font-bold text-text-main shadow-sm hover:brightness-95 transition-all">
+            class="flex items-center gap-2 bg-primary px-4 py-2 rounded-lg text-sm font-bold text-white shadow-sm hover:brightness-95 transition-all">
             <span class="material-symbols-outlined text-sm">add</span>
             Nueva Clase
           </button>
@@ -132,11 +157,10 @@
           class="bg-white rounded-xl p-6 border border-accent-border shadow-sm flex flex-col justify-between h-32 relative overflow-hidden">
           <div class="z-10">
             <p class="text-text-main/60 text-sm font-bold uppercase tracking-wide">Total Alumnos</p>
-            <p id="valor-total-alumnos" class="text-text-main text-3xl font-black mt-1">124</p>
+            <p id="valor-total-alumnos" class="text-text-main text-3xl font-black mt-1">0</p>
           </div>
           <div class="z-10 flex items-center text-green-600 text-sm font-bold mt-2">
-            <span class="material-symbols-outlined text-sm mr-1">trending_up</span> +5%
-            <span class="text-text-main/40 font-normal ml-1">este mes</span>
+            <span class="material-symbols-outlined text-sm mr-1">groups</span> alumnos activos en studio
           </div>
           <div class="absolute -right-4 -bottom-4 opacity-5 pointer-events-none">
             <span class="material-symbols-outlined text-[80px]">groups</span>
@@ -147,11 +171,10 @@
           class="bg-white rounded-xl p-6 border border-accent-border shadow-sm flex flex-col justify-between h-32 relative overflow-hidden">
           <div class="z-10">
             <p class="text-text-main/60 text-sm font-bold uppercase tracking-wide">Clases Hoy</p>
-            <p id="valor-clases-hoy" class="text-text-main text-3xl font-black mt-1">8</p>
+            <p id="valor-clases-hoy" class="text-text-main text-3xl font-black mt-1">0</p>
           </div>
-          <div class="z-10 flex items-center text-rose-500 text-sm font-bold mt-2">
-            <span class="material-symbols-outlined text-sm mr-1">trending_down</span> -2%
-            <span class="text-text-main/40 font-normal ml-1">vs ayer</span>
+          <div class="z-10 flex items-center text-blue-600 text-sm font-bold mt-2">
+            <span class="material-symbols-outlined text-sm mr-1">event</span> clases del día seleccionado
           </div>
           <div class="absolute -right-4 -bottom-4 opacity-5 pointer-events-none">
             <span class="material-symbols-outlined text-[80px]">history_edu</span>
@@ -161,12 +184,11 @@
         <div id="card-creditos-asignados"
           class="bg-white rounded-xl p-6 border border-accent-border shadow-sm flex flex-col justify-between h-32 relative overflow-hidden">
           <div class="z-10">
-            <p class="text-text-main/60 text-sm font-bold uppercase tracking-wide">Créditos Asignados</p>
-            <p id="valor-creditos-asignados" class="text-text-main text-3xl font-black mt-1">450</p>
+            <p class="text-text-main/60 text-sm font-bold uppercase tracking-wide">Reservas Posibles</p>
+            <p id="valor-creditos-asignados" class="text-text-main text-3xl font-black mt-1">-</p>
           </div>
-          <div class="z-10 flex items-center text-green-600 text-sm font-bold mt-2">
-            <span class="material-symbols-outlined text-sm mr-1">trending_up</span> +12%
-            <span class="text-text-main/40 font-normal ml-1">esta semana</span>
+          <div class="z-10 flex items-center text-text-main/60 text-sm font-bold mt-2">
+            <span class="material-symbols-outlined text-sm mr-1">confirmation_number</span> pendiente integrar membresías
           </div>
           <div class="absolute -right-4 -bottom-4 opacity-5 pointer-events-none">
             <span class="material-symbols-outlined text-[80px]">confirmation_number</span>
@@ -179,10 +201,10 @@
         class="bg-white rounded-xl border border-accent-border shadow-sm overflow-hidden">
         <div class="px-6 py-5 border-b border-accent-border flex justify-between items-center">
           <h3 id="titulo-seccion-clases-hoy" class="text-text-main text-xl font-bold">Clases</h3>
-          <!-- Campo de selección de fecha para filtrar clases -->
           <input id="fecha-seleccionada" type="date"
             class="text-sm text-text-main border border-accent-border rounded px-2 py-1" />
         </div>
+
         <div class="overflow-x-auto">
           <table id="tabla-clases-hoy" class="w-full text-left">
             <thead>
@@ -191,7 +213,7 @@
                 <th class="px-6 py-4 text-text-main/60 text-xs font-bold uppercase tracking-wider">Tipo de Clase</th>
                 <th class="px-6 py-4 text-text-main/60 text-xs font-bold uppercase tracking-wider">Instructor</th>
                 <th class="px-6 py-4 text-text-main/60 text-xs font-bold uppercase tracking-wider">Sala</th>
-                <th class="px-6 py-4 text-text-main/60 text-xs font-bold uppercase tracking-wider">Inscritos</th>
+                <th class="px-6 py-4 text-text-main/60 text-xs font-bold uppercase tracking-wider">Cupos</th>
                 <th class="px-6 py-4"></th>
               </tr>
             </thead>
@@ -270,7 +292,7 @@
           </button>
 
           <button id="btn-guardar-nueva-clase" type="submit"
-            class="px-4 py-2 rounded-lg bg-primary text-text-main font-bold hover:brightness-95">
+            class="px-4 py-2 rounded-lg bg-primary text-white font-bold hover:brightness-95">
             Crear Clase
           </button>
         </div>
@@ -278,39 +300,75 @@
     </div>
   </div>
 
-  <script>
-    let themeColors = {
-      background_color: "#E7C7C2",
-      background_light: "#F5E9E7",
-      background_dark: "#2B2B2B",
-      line_color: "#D6C3A5",
-      text_color: "#2B2B2B"
-    };
+  <!-- Modal Inscribir Alumno -->
+  <div id="modal-inscribir-alumno" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30 backdrop-blur-sm">
+    <div class="bg-white w-full max-w-lg rounded-xl shadow-2xl overflow-hidden border border-accent-border">
 
+      <div class="p-6 border-b border-accent-border">
+        <div class="flex justify-between items-start mb-2">
+          <h2 class="text-2xl font-bold text-text-main tracking-tight">Inscribir Alumno a Clase</h2>
+          <button id="btn-cerrar-modal-inscripcion" type="button"
+            class="text-text-main/40 hover:text-primary transition-colors">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <p id="texto-clase-seleccionada" class="text-primary font-medium flex items-center gap-2">
+          <span class="material-symbols-outlined text-sm">event</span>
+          Clase seleccionada
+        </p>
+      </div>
+
+      <div class="p-6 space-y-6">
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <span class="material-symbols-outlined text-primary/60">search</span>
+          </div>
+          <input
+            id="input-busqueda-alumno-inscripcion"
+            type="text"
+            placeholder="Buscar alumno por nombre, email o teléfono..."
+            class="block w-full pl-10 pr-4 py-3 bg-primary/5 border border-accent-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all placeholder:text-text-main/40"
+          />
+        </div>
+
+        <div>
+          <p class="text-xs font-bold uppercase tracking-wider text-text-main/40 mb-3 px-1">
+            Resultados de búsqueda
+          </p>
+          <div id="lista-alumnos-inscripcion" class="space-y-1 max-h-80 overflow-y-auto">
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-primary/5 p-4 border-t border-accent-border flex justify-end gap-3">
+        <button id="btn-cancelar-inscripcion" type="button"
+          class="px-5 py-2 text-text-main/60 font-medium hover:text-primary transition-colors">
+          Cancelar
+        </button>
+
+        <button id="btn-cerrar-footer-inscripcion" type="button"
+          class="px-5 py-2 bg-slate-900 text-white rounded-lg font-bold shadow-md hover:shadow-lg transition-all active:scale-95">
+          Cerrar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
     let classData = [];
     let studioId = 1;
     let selectedDate = new Date().toISOString().split("T")[0];
 
-    tailwind.config = {
-      darkMode: "class",
-      theme: {
-        extend: {
-          colors: {
-            primary: themeColors.background_color,
-            "background-light": themeColors.background_light,
-            "background-dark": themeColors.background_dark,
-            "accent-border": themeColors.line_color,
-            "text-main": themeColors.text_color
-          }
-        }
-      }
-    };
+    let currentClassIdToEnroll = null;
+    let allClientsForEnrollment = [];
+    let filteredClientsForEnrollment = [];
 
-    document.addEventListener("DOMContentLoaded", () => {
-      initPage();
-      initModal();
-      initForm();
-      initMenuActions();
+    document.addEventListener("DOMContentLoaded", async () => {
+      await initPage();
+      initClassModal();
+      initClassForm();
+      initEnrollmentModal();
     });
 
     async function initPage() {
@@ -323,7 +381,23 @@
         });
       }
 
-      await loadClasses();
+      await Promise.all([
+        loadClasses(),
+        loadStudentsCount()
+      ]);
+    }
+
+    async function loadStudentsCount() {
+      try {
+        const response = await fetch("/api/clients");
+        if (!response.ok) return;
+
+        const clients = await response.json();
+        const filtered = clients.filter(client => Number(client.studioId) === Number(studioId));
+        document.getElementById("valor-total-alumnos").textContent = filtered.length;
+      } catch (error) {
+        console.error("Error cargando total de alumnos:", error);
+      }
     }
 
     async function loadClasses() {
@@ -366,12 +440,12 @@
 
       if (!classes || classes.length === 0) {
         tbody.innerHTML = `
-        <tr>
-          <td colspan="6" class="px-6 py-8 text-center text-text-main/50 font-medium">
-            No hay clases registradas para esta fecha
-          </td>
-        </tr>
-      `;
+          <tr>
+            <td colspan="6" class="px-6 py-8 text-center text-text-main/50 font-medium">
+              No hay clases registradas para esta fecha
+            </td>
+          </tr>
+        `;
         return;
       }
 
@@ -386,72 +460,79 @@
         if (clase.status === "DISPONIBLE") colorBarra = "bg-green-500";
 
         const fila = `
-        <tr class="hover:bg-primary/5 transition-colors">
-          <td class="px-6 py-5">
-            <span class="text-text-main font-bold">
-              ${formatTime(clase.startTime)} - ${formatTime(clase.endTime)}
-            </span>
-          </td>
-
-          <td class="px-6 py-5">
-            <div class="flex items-center gap-2">
-              <span class="size-2 rounded-full bg-[#D6E7C2]"></span>
-              <span class="text-text-main font-semibold">
-                ${clase.classTypeName}
+          <tr class="hover:bg-primary/5 transition-colors">
+            <td class="px-6 py-5">
+              <span class="text-text-main font-bold">
+                ${formatTime(clase.startTime)} - ${formatTime(clase.endTime)}
               </span>
-            </div>
-          </td>
+            </td>
 
-          <td class="px-6 py-5 text-text-main/80 font-medium">
-            ${clase.coachUserName || "Sin instructor"}
-          </td>
-
-          <td class="px-6 py-5 text-text-main/80 font-medium">
-            ${clase.roomName || "Sin sala"}
-          </td>
-
-          <td class="px-6 py-5">
-            <div class="flex items-center gap-2">
-              <div class="w-20 bg-background-light rounded-full h-1.5 overflow-hidden">
-                <div class="${colorBarra} h-full" style="width:${progreso}%"></div>
+            <td class="px-6 py-5">
+              <div class="flex items-center gap-2">
+                <span class="size-2 rounded-full bg-[#D6E7C2]"></span>
+                <span class="text-text-main font-semibold">
+                  ${clase.classTypeName}
+                </span>
               </div>
+            </td>
 
-              <span class="text-sm font-bold text-text-main">
-                ${clase.capacity}/${clase.capacityTotal}
-              </span>
-            </div>
-          </td>
+            <td class="px-6 py-5 text-text-main/80 font-medium">
+              ${clase.coachUserName || "Sin instructor"}
+            </td>
 
-          <td class="px-6 py-5 text-right relative">
-            <button
-              class="text-text-main/40 hover:text-text-main transition-colors js-menu-trigger"
-              data-class-id="${clase.id}"
-              aria-expanded="false"
-              type="button">
-              <span class="material-symbols-outlined">more_vert</span>
-            </button>
+            <td class="px-6 py-5 text-text-main/80 font-medium">
+              ${clase.roomName || "Sin sala"}
+            </td>
 
-            <div
-              class="js-menu hidden absolute right-6 mt-2 w-48 rounded-lg border border-accent-border bg-white shadow-lg z-20"
-              data-class-id="${clase.id}">
+            <td class="px-6 py-5">
+              <div class="flex items-center gap-2">
+                <div class="w-20 bg-background-light rounded-full h-1.5 overflow-hidden">
+                  <div class="${colorBarra} h-full" style="width:${progreso}%"></div>
+                </div>
+
+                <span class="text-sm font-bold text-text-main">
+                  ${clase.capacity}/${clase.capacityTotal}
+                </span>
+              </div>
+            </td>
+
+            <td class="px-6 py-5 text-right relative">
               <button
-                class="js-action-btn w-full text-left px-4 py-3 text-sm hover:bg-slate-50"
-                data-action="ver-detalle"
+                class="text-text-main/40 hover:text-text-main transition-colors js-menu-trigger"
                 data-class-id="${clase.id}"
+                aria-expanded="false"
                 type="button">
-                Ver detalle
+                <span class="material-symbols-outlined">more_vert</span>
               </button>
-              <button
-                class="js-action-btn w-full text-left px-4 py-3 text-sm hover:bg-slate-50"
-                data-action="eliminar-clase"
-                data-class-id="${clase.id}"
-                type="button">
-                Eliminar clase
-              </button>
-            </div>
-          </td>
-        </tr>
-      `;
+
+              <div
+                class="js-menu hidden absolute right-6 mt-2 w-48 rounded-lg border border-accent-border bg-white shadow-lg z-20"
+                data-class-id="${clase.id}">
+                <button
+                  class="js-action-btn w-full text-left px-4 py-3 text-sm hover:bg-slate-50"
+                  data-action="ver-detalle"
+                  data-class-id="${clase.id}"
+                  type="button">
+                  Ver detalle
+                </button>
+                <button
+                  class="js-action-btn w-full text-left px-4 py-3 text-sm hover:bg-slate-50"
+                  data-action="inscribir-alumno"
+                  data-class-id="${clase.id}"
+                  type="button">
+                  Inscribir alumno
+                </button>
+                <button
+                  class="js-action-btn w-full text-left px-4 py-3 text-sm hover:bg-slate-50"
+                  data-action="eliminar-clase"
+                  data-class-id="${clase.id}"
+                  type="button">
+                  Eliminar clase
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
 
         tbody.innerHTML += fila;
       });
@@ -464,7 +545,13 @@
       return time.length >= 5 ? time.substring(0, 5) : time;
     }
 
-    function initModal() {
+    function getInitials(firstName, lastName) {
+      const first = firstName ? firstName.charAt(0).toUpperCase() : "";
+      const last = lastName ? lastName.charAt(0).toUpperCase() : "";
+      return `${first}${last}`;
+    }
+
+    function initClassModal() {
       const modal = document.getElementById("modal-nueva-clase");
       const btnAbrir = document.getElementById("btn-abrir-modal-nueva-clase");
       const btnCerrar = document.getElementById("btn-cerrar-modal-nueva-clase");
@@ -492,7 +579,7 @@
       });
     }
 
-    function initForm() {
+    function initClassForm() {
       const formNuevaClase = document.getElementById("form-nueva-clase");
 
       formNuevaClase?.addEventListener("submit", async (event) => {
@@ -527,8 +614,7 @@
             return;
           }
 
-          const nuevaClase = await response.json();
-          console.log("Clase creada:", nuevaClase);
+          await response.json();
 
           document.getElementById("modal-nueva-clase").classList.add("hidden");
           formNuevaClase.reset();
@@ -588,6 +674,10 @@
             alert(`Clase ID: ${classId}`);
           }
 
+          if (action === "inscribir-alumno") {
+            await openEnrollmentModal(classId);
+          }
+
           if (action === "eliminar-clase") {
             const confirmar = confirm("¿Seguro que deseas eliminar esta clase?");
             if (!confirmar) return;
@@ -615,8 +705,175 @@
         };
       });
     }
-  </script>
 
+    function initEnrollmentModal() {
+      const btnCerrar = document.getElementById("btn-cerrar-modal-inscripcion");
+      const btnCancelar = document.getElementById("btn-cancelar-inscripcion");
+      const btnCerrarFooter = document.getElementById("btn-cerrar-footer-inscripcion");
+      const modal = document.getElementById("modal-inscribir-alumno");
+      const inputBusqueda = document.getElementById("input-busqueda-alumno-inscripcion");
+
+      btnCerrar?.addEventListener("click", closeEnrollmentModal);
+      btnCancelar?.addEventListener("click", closeEnrollmentModal);
+      btnCerrarFooter?.addEventListener("click", closeEnrollmentModal);
+
+      modal?.addEventListener("click", (event) => {
+        if (event.target === modal) {
+          closeEnrollmentModal();
+        }
+      });
+
+      inputBusqueda?.addEventListener("input", () => {
+        const term = inputBusqueda.value.trim().toLowerCase();
+
+        filteredClientsForEnrollment = allClientsForEnrollment.filter(client => {
+          const fullName = `${client.firstName || ""} ${client.lastName || ""}`.toLowerCase();
+          const email = (client.email || "").toLowerCase();
+          const phone = (client.phone || "").toLowerCase();
+
+          return fullName.includes(term) || email.includes(term) || phone.includes(term);
+        });
+
+        renderEnrollmentClients(filteredClientsForEnrollment);
+      });
+    }
+
+    async function openEnrollmentModal(classId) {
+      currentClassIdToEnroll = classId;
+
+      const modal = document.getElementById("modal-inscribir-alumno");
+      const inputBusqueda = document.getElementById("input-busqueda-alumno-inscripcion");
+      const textoClase = document.getElementById("texto-clase-seleccionada");
+
+      if (inputBusqueda) inputBusqueda.value = "";
+
+      const selectedClass = classData.find(clase => Number(clase.id) === Number(classId));
+      if (selectedClass && textoClase) {
+        textoClase.innerHTML = `
+          <span class="material-symbols-outlined text-sm">event</span>
+          ${selectedClass.classTypeName} - ${formatTime(selectedClass.startTime)}
+        `;
+      }
+
+      try {
+        const response = await fetch("/api/clients");
+
+        if (!response.ok) {
+          const text = await response.text();
+          console.error("Error cargando alumnos para inscripción:", response.status, text);
+          alert("No se pudieron cargar los alumnos");
+          return;
+        }
+
+        const clients = await response.json();
+
+        allClientsForEnrollment = clients
+          .filter(client => Number(client.studioId) === Number(studioId))
+          .filter(client => client.status === "ACTIVE");
+
+        filteredClientsForEnrollment = [...allClientsForEnrollment];
+        renderEnrollmentClients(filteredClientsForEnrollment);
+
+        modal.classList.remove("hidden");
+      } catch (error) {
+        console.error("Error cargando alumnos para inscripción:", error);
+        alert("Ocurrió un error al cargar alumnos");
+      }
+    }
+
+    function closeEnrollmentModal() {
+      const modal = document.getElementById("modal-inscribir-alumno");
+      modal?.classList.add("hidden");
+      currentClassIdToEnroll = null;
+    }
+
+    function renderEnrollmentClients(clients) {
+      const container = document.getElementById("lista-alumnos-inscripcion");
+      if (!container) return;
+
+      container.innerHTML = "";
+
+      if (!clients || clients.length === 0) {
+        container.innerHTML = `
+          <div class="p-4 text-sm text-text-main/60 text-center border border-accent-border rounded-lg">
+            No se encontraron alumnos
+          </div>
+        `;
+        return;
+      }
+
+      clients.forEach(client => {
+        const fullName = `${client.firstName || ""} ${client.lastName || ""}`.trim() || "Sin nombre";
+        const initials = getInitials(client.firstName, client.lastName);
+        const subtitle = `${client.email || "Sin email"} • ${client.phone || "Sin teléfono"}`;
+
+        const row = document.createElement("div");
+        row.className = "flex items-center justify-between gap-3 p-3 rounded-lg hover:bg-primary/5 transition-all border border-transparent hover:border-primary/10 group";
+
+        row.innerHTML = `
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold overflow-hidden text-sm shrink-0">
+              ${initials}
+            </div>
+
+            <div class="min-w-0">
+              <p class="font-semibold text-text-main truncate">${fullName}</p>
+              <p class="text-xs text-text-main/50 truncate">${subtitle}</p>
+            </div>
+          </div>
+
+          <button
+            class="bg-primary hover:bg-primary/90 text-white px-4 py-1.5 rounded-lg text-sm font-semibold transition-transform active:scale-95 shadow-sm shrink-0"
+            type="button">
+            Inscribir
+          </button>
+        `;
+
+        const button = row.querySelector("button");
+        button.addEventListener("click", async () => {
+          await enrollClientInClass(client.id);
+        });
+
+        container.appendChild(row);
+      });
+    }
+
+    async function enrollClientInClass(clientId) {
+      if (!currentClassIdToEnroll) {
+        alert("No hay clase seleccionada");
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/classes/${currentClassIdToEnroll}/reservations`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            clientId: clientId,
+            notes: "Inscripción desde panel admin"
+          })
+        });
+
+        if (!response.ok) {
+          const text = await response.text();
+          console.error("Error inscribiendo alumno:", response.status, text);
+          alert("No se pudo inscribir el alumno");
+          return;
+        }
+
+        await response.json();
+
+        alert("Alumno inscrito correctamente");
+        closeEnrollmentModal();
+        await loadClasses();
+      } catch (error) {
+        console.error("Error inscribiendo alumno:", error);
+        alert("Ocurrió un error al inscribir el alumno");
+      }
+    }
+  </script>
 </body>
 
 </html>
