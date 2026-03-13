@@ -69,18 +69,17 @@
         </div>
       </div>
 
-
-      <nav class="flex flex-col gap-2 grow">
-        <a class="sidebar-item-active flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors"
+      <nav class="flex-1 px-4 py-4 space-y-2">
+        <a class="flex items-center gap-3 px-4 py-3 text-text-sub hover:bg-accent/20 hover:text-text-main rounded-xl transition-all duration-200"
           href="/index.html">
-          <span class="material-symbols-outlined text-white">dashboard</span>
-          <span class="text-white text-sm font-semibold">Dashboard</span>
+          <span class="material-symbols-outlined">dashboard</span>
+          <span class="font-medium">Dashboard</span>
         </a>
 
-        <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-primary/20 transition-colors"
+        <a class="flex items-center gap-3 px-4 py-3 bg-accent text-text-main rounded-xl shadow-sm transition-all duration-200"
           href="/students.html">
-          <span class="material-symbols-outlined text-text-main">group</span>
-          <span class="text-text-main text-sm font-medium">Alumnos</span>
+          <span class="material-symbols-outlined">group</span>
+          <span class="font-bold">Alumnos</span>
         </a>
 
         <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-primary/20 transition-colors"
@@ -90,21 +89,20 @@
         </a>
       </nav>
 
-      <div class="mt-auto pt-6 border-t border-accent-border">
-        <div class="flex items-center gap-3 px-2">
-          <div class="size-8 rounded-full bg-accent-border flex items-center justify-center overflow-hidden">
-            <img alt="Admin avatar" class="w-full h-full object-cover"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuBtqjbAJVy5wJGRfFYHfE2ZP5epOntDQjmQvkc-MUy1OqB09Nf4UEc_yGtMJ57wsbYiuUIFcx_XjaS-C7Nng0wCqI5CCyruaPb4bttJTo-fzajIxbqC1e8rKr--jfNxsfSNDz2VYnqhR1zgNocOpg9iaVyZvYyhGBcc9MhdRnuIfXA1lRlGF7ypidATcdNULid9dbX9XSDv3LrKjSjVcnHtfaxk5UvDtUYILkbipdy2pgogiNTeQ0wpU2xgbUE9Cr2YuXayl41gPzj1" />
+        <div class="mt-4 flex items-center gap-3 px-4 py-2">
+          <div class="size-8 rounded-full bg-accent/40 overflow-hidden">
+            <img alt="Admin Avatar" class="w-full h-full object-cover"
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuAqFSESjTWj5c5EoavjThRT7romSla6iB8LRtya7lX8rbKwoAK6-lG-5nJn7iHKuGKojDXzNVnROe-Mz_G4r7duAoPqF_61lL-JJYaZN0SFEFPgnUtr5tTDK5FlaXfNFoVo5-RXCdvHym0uHnIid63-0Gy1yA8fkXNX_kCOSPcAm2aAYNj64AI8JuDzacW5gXCAe9RaqHEAVqx3HWsrrL6rvysW0O-cJFpLHjn11dI-e3f51NPHchFcQA_FtFSSuEof4ajF1x14AmQN" />
           </div>
-
-          <div class="flex flex-col overflow-hidden">
-            <p class="text-text-main text-sm font-semibold truncate">Lucía Méndez</p>
-            <p class="text-text-main/50 text-xs truncate">Admin Principal</p>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-bold truncate">Admin Studio</p>
+            <p class="text-xs text-text-sub truncate">admin@studio.com</p>
           </div>
+          <span class="material-symbols-outlined text-text-sub text-sm cursor-pointer">logout</span>
         </div>
       </div>
     </aside>
-
+    
     <!-- Main Content -->
     <main class="flex-1 overflow-y-auto bg-background-light p-8">
       <header class="mb-8 flex justify-between items-end">
