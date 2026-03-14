@@ -9,36 +9,21 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/clients")
 public class ClientController {
-
     private final ClientService clientService;
-
-    public ClientController(ClientService clientService) {
-        this.clientService = clientService;
-    }
+    public ClientController(ClientService clientService) { this.clientService = clientService; }
 
     @GetMapping
-    public List<ClientDTO> obtenerTodos() {
-        return clientService.obtenerTodos();
-    }
+    public List<ClientDTO> obtenerTodos() { return clientService.obtenerTodos(); }
 
     @GetMapping("/{id}")
-    public ClientDTO obtenerPorId(@PathVariable Long id) {
-        return clientService.obtenerPorId(id);
-    }
+    public ClientDTO obtenerPorId(@PathVariable Long id) { return clientService.obtenerPorId(id); }
 
     @PostMapping
-    public ClientDTO crear(@RequestBody ClientDTO dto) {
-        return clientService.crear(dto);
-    }
+    public ClientDTO crear(@RequestBody ClientDTO dto) { return clientService.crear(dto); }
 
     @PutMapping("/{id}")
-    public ClientDTO actualizar(@PathVariable Long id, @RequestBody ClientDTO dto) {
-        return clientService.actualizar(id, dto);
-    }
+    public ClientDTO actualizar(@PathVariable Long id, @RequestBody ClientDTO dto) { return clientService.actualizar(id, dto); }
 
     @DeleteMapping("/{id}")
-    public String eliminar(@PathVariable Long id) {
-        clientService.eliminar(id);
-        return "Alumno eliminado correctamente";
-    }
+    public String eliminar(@PathVariable Long id) { clientService.eliminar(id); return "Alumno eliminado correctamente"; }
 }
