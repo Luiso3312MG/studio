@@ -11,6 +11,7 @@
     rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
     rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <script>
     tailwind.config = {
@@ -433,7 +434,12 @@
           if (!response.ok) {
             const text = await response.text();
             console.error("Error creando salón:", response.status, text);
-            alert("No se pudo crear el salón");
+            await Swal.fire({
+              icon: "error",
+              title: "No se pudo crear",
+              text: "No se pudo crear el salón",
+              confirmButtonColor: "#dc2626"
+            });
             return;
           }
 
@@ -441,9 +447,21 @@
           document.getElementById("room-active").checked = true;
           await loadRooms();
           fillSelects();
+
+          await Swal.fire({
+            icon: "success",
+            title: "Salón creado",
+            text: "El salón fue creado correctamente",
+            confirmButtonColor: "#16a34a"
+          });
         } catch (error) {
           console.error("Error creando salón:", error);
-          alert("Ocurrió un error al crear el salón");
+          await Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: "Ocurrió un error al crear el salón",
+            confirmButtonColor: "#dc2626"
+          });
         }
       });
 
@@ -472,7 +490,12 @@
           if (!response.ok) {
             const text = await response.text();
             console.error("Error creando tipo de clase:", response.status, text);
-            alert("No se pudo crear el tipo de clase");
+            await Swal.fire({
+              icon: "error",
+              title: "No se pudo crear",
+              text: "No se pudo crear el tipo de clase",
+              confirmButtonColor: "#dc2626"
+            });
             return;
           }
 
@@ -481,9 +504,21 @@
           document.getElementById("type-active").checked = true;
           await loadClassTypes();
           fillSelects();
+
+          await Swal.fire({
+            icon: "success",
+            title: "Tipo de clase creado",
+            text: "El tipo de clase fue creado correctamente",
+            confirmButtonColor: "#16a34a"
+          });
         } catch (error) {
           console.error("Error creando tipo de clase:", error);
-          alert("Ocurrió un error al crear el tipo de clase");
+          await Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: "Ocurrió un error al crear el tipo de clase",
+            confirmButtonColor: "#dc2626"
+          });
         }
       });
 
@@ -494,7 +529,12 @@
         const selectedRoom = roomsData.find(item => Number(item.id) === Number(document.getElementById("single-room").value));
 
         if (!selectedType || !selectedRoom) {
-          alert("Debes seleccionar tipo de clase y salón");
+          await Swal.fire({
+            icon: "warning",
+            title: "Campos incompletos",
+            text: "Debes seleccionar tipo de clase y salón",
+            confirmButtonColor: "#d97706"
+          });
           return;
         }
 
@@ -523,16 +563,32 @@
           if (!response.ok) {
             const text = await response.text();
             console.error("Error creando clase única:", response.status, text);
-            alert("No se pudo crear la clase única");
+            await Swal.fire({
+              icon: "error",
+              title: "No se pudo crear",
+              text: "No se pudo crear la clase única",
+              confirmButtonColor: "#dc2626"
+            });
             return;
           }
 
           await response.json();
-          alert("Clase única creada correctamente");
           e.target.reset();
+
+          await Swal.fire({
+            icon: "success",
+            title: "Clase creada",
+            text: "Clase única creada correctamente",
+            confirmButtonColor: "#16a34a"
+          });
         } catch (error) {
           console.error("Error creando clase única:", error);
-          alert("Ocurrió un error al crear la clase única");
+          await Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: "Ocurrió un error al crear la clase única",
+            confirmButtonColor: "#dc2626"
+          });
         }
       });
 
@@ -543,7 +599,12 @@
           .map(el => Number(el.value));
 
         if (weekdays.length === 0) {
-          alert("Selecciona al menos un día de la semana");
+          await Swal.fire({
+            icon: "warning",
+            title: "Selecciona días",
+            text: "Selecciona al menos un día de la semana",
+            confirmButtonColor: "#d97706"
+          });
           return;
         }
 
@@ -572,17 +633,33 @@
           if (!response.ok) {
             const text = await response.text();
             console.error("Error generando clases recurrentes:", response.status, text);
-            alert("No se pudieron generar las clases recurrentes");
+            await Swal.fire({
+              icon: "error",
+              title: "No se pudieron generar",
+              text: "No se pudieron generar las clases recurrentes",
+              confirmButtonColor: "#dc2626"
+            });
             return;
           }
 
           const result = await response.json();
-          alert(`Se generaron ${result.totalCreated} clases correctamente`);
           e.target.reset();
           document.querySelectorAll(".weekday").forEach(el => el.checked = false);
+
+          await Swal.fire({
+            icon: "success",
+            title: "Clases generadas",
+            text: `Se generaron ${result.totalCreated} clases correctamente`,
+            confirmButtonColor: "#16a34a"
+          });
         } catch (error) {
           console.error("Error generando clases recurrentes:", error);
-          alert("Ocurrió un error al generar las clases recurrentes");
+          await Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: "Ocurrió un error al generar las clases recurrentes",
+            confirmButtonColor: "#dc2626"
+          });
         }
       });
     }
