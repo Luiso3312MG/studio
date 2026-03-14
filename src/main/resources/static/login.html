@@ -135,66 +135,94 @@ Ingresar
 </main>
 
 <script>
+document.getElementById("current-year").textContent = new Date().getFullYear();
 
-document.getElementById('current-year').textContent=new Date().getFullYear()
+const toggle = document.getElementById("togglePassword");
+const passwordInput = document.getElementById("password");
+const form = document.getElementById("loginForm");
+const errorBox = document.getElementById("errorBox");
+const submitButton = form.querySelector('button[type="submit"]');
 
-const toggle=document.getElementById("togglePassword")
-const passwordInput=document.getElementById("password")
+toggle.addEventListener("click", () => {
+  const isPassword = passwordInput.getAttribute("type") === "password";
+  passwordInput.setAttribute("type", isPassword ? "text" : "password");
+  toggle.textContent = isPassword ? "ocultar" : "ver";
+});
 
-toggle.addEventListener("click",()=>{
-const type=passwordInput.getAttribute("type")==="password"?"text":"password"
-passwordInput.setAttribute("type",type)
-toggle.textContent= type==="password" ? "ver":"ocultar"
-})
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-const form=document.getElementById("loginForm")
-const errorBox=document.getElementById("errorBox")
+  errorBox.textContent = "";
+  errorBox.classList.add("hidden");
 
-form.addEventListener("submit",async(e)=>{
-e.preventDefault()
+  const username = document.getElementById("username").value.trim();
+  const password = document.getElementById("password").value;
 
-errorBox.classList.add("hidden")
+  if (!username || !password) {
+    errorBox.textContent = "Captura usuario y contraseña.";
+    errorBox.classList.remove("hidden");
+    return;
+  }
 
-const username=document.getElementById("username").value
-const password=document.getElementById("password").value
+  const originalButtonText = submitButton.textContent;
+  submitButton.disabled = true;
+  submitButton.textContent = "Ingresando...";
 
-try{
+  try {
+    const response = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      credentials: "include",
+      body: JSON.stringify({
+        username,
+        password
+      })
+    });
 
-const response=await fetch("/api/auth/login",{
-method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
-credentials:"include",
-body:JSON.stringify({
-username:username,
-password:password
-})
-})
+    if (!response.ok) {
+      let errorMessage = "Credenciales incorrectas";
 
-if(!response.ok){
-throw new Error("Credenciales incorrectas")
-}
+      try {
+        const contentType = response.headers.get("content-type") || "";
 
-const data=await response.json()
+        if (contentType.includes("application/json")) {
+          const errorData = await response.json();
+          errorMessage =
+            errorData.message ||
+            errorData.error ||
+            "No fue posible iniciar sesión";
+        } else {
+          const errorText = await response.text();
+          if (errorText && errorText.trim()) {
+            errorMessage = errorText;
+          }
+        }
+      } catch (_) {
+      }
 
-if(data.authenticated){
-window.location.href="/index.html"
-return
-}
+      throw new Error(errorMessage);
+    }
 
-throw new Error("No fue posible iniciar sesión")
+    const data = await response.json();
 
-}catch(error){
+    if (data.authenticated) {
+      window.location.href = "/index.html";
+      return;
+    }
 
-errorBox.textContent=error.message
-errorBox.classList.remove("hidden")
-
-}
-
-})
-
+    throw new Error("No fue posible iniciar sesión");
+  } catch (error) {
+    errorBox.textContent = error.message || "Ocurrió un error al iniciar sesión";
+    errorBox.classList.remove("hidden");
+  } finally {
+    submitButton.disabled = false;
+    submitButton.textContent = originalButtonText;
+  }
+});
 </script>
+
 
 </body>
 </html>

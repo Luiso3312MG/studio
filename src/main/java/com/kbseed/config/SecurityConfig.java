@@ -20,11 +20,10 @@ public class SecurityConfig {
                     "/",
                     "/login.html",
                     "/api/auth/login",
+                    "/favicon.ico",
                     "/css/**",
                     "/js/**",
-                    "/images/**",
-                    "/favicon.ico",
-                    "/index.html"
+                    "/images/**"
                 ).permitAll()
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .anyRequest().authenticated()
