@@ -185,7 +185,6 @@
 
       <section class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
 
-        <!-- TOTAL ALUMNOS -->
         <div
           class="bg-white rounded-xl p-8 border border-accent-border shadow-sm flex flex-col justify-between min-h-[180px] relative overflow-hidden">
           <div class="z-10">
@@ -207,8 +206,6 @@
           </div>
         </div>
 
-
-        <!-- CLASES HOY -->
         <div
           class="bg-white rounded-xl p-8 border border-accent-border shadow-sm flex flex-col justify-between min-h-[180px] relative overflow-hidden">
           <div class="z-10">
@@ -230,8 +227,6 @@
           </div>
         </div>
 
-
-        <!-- RESERVAS POSIBLES -->
         <div
           class="bg-white rounded-xl p-8 border border-accent-border shadow-sm flex flex-col justify-between min-h-[180px] relative overflow-hidden">
           <div class="z-10">
@@ -259,7 +254,7 @@
 
       </section>
 
-      <section class="bg-white rounded-xl border border-accent-border shadow-sm overflow-hidden">
+      <section class="bg-white rounded-xl border border-accent-border shadow-sm relative">
         <div class="px-6 py-5 border-b border-accent-border flex justify-between items-center">
           <h3 class="text-text-main text-xl font-bold">Clases</h3>
           <input id="fecha-seleccionada" type="date"
@@ -281,7 +276,6 @@
             <tbody id="tabla-body"></tbody>
           </table>
         </div>
-
       </section>
 
       <footer class="mt-12 text-center text-text-main/40 text-xs">
@@ -338,6 +332,28 @@
         </button>
       </div>
     </div>
+  </div>
+
+  <!-- Menú global flotante -->
+  <div id="class-action-menu"
+    class="hidden fixed z-[1000] w-48 rounded-lg border border-accent-border bg-white shadow-xl overflow-hidden">
+    <button id="menu-action-detail"
+      class="w-full text-left px-4 py-3 text-sm hover:bg-slate-50"
+      type="button">
+      Ver detalle
+    </button>
+
+    <button id="menu-action-enroll"
+      class="w-full text-left px-4 py-3 text-sm hover:bg-slate-50"
+      type="button">
+      Inscribir alumno
+    </button>
+
+    <button id="menu-action-delete"
+      class="w-full text-left px-4 py-3 text-sm hover:bg-slate-50 text-red-600"
+      type="button">
+      Eliminar clase
+    </button>
   </div>
 
   <script>
@@ -480,40 +496,13 @@
             </div>
           </td>
 
-          <td class="px-6 py-5 text-right relative">
+          <td class="px-6 py-5 text-right">
             <button
               class="text-text-main/40 hover:text-text-main transition-colors js-menu-trigger"
               data-class-id="${clase.id}"
-              aria-expanded="false"
               type="button">
               <span class="material-symbols-outlined">more_vert</span>
             </button>
-
-            <div
-              class="js-menu hidden absolute right-6 mt-2 w-48 rounded-lg border border-accent-border bg-white shadow-lg z-20"
-              data-class-id="${clase.id}">
-              <button
-                class="js-action-btn w-full text-left px-4 py-3 text-sm hover:bg-slate-50"
-                data-action="ver-detalle"
-                data-class-id="${clase.id}"
-                type="button">
-                Ver detalle
-              </button>
-              <button
-                class="js-action-btn w-full text-left px-4 py-3 text-sm hover:bg-slate-50"
-                data-action="inscribir-alumno"
-                data-class-id="${clase.id}"
-                type="button">
-                Inscribir alumno
-              </button>
-              <button
-                class="js-action-btn w-full text-left px-4 py-3 text-sm hover:bg-slate-50"
-                data-action="eliminar-clase"
-                data-class-id="${clase.id}"
-                type="button">
-                Eliminar clase
-              </button>
-            </div>
           </td>
         </tr>
       `;
@@ -537,112 +526,131 @@
 
     function initMenuActions() {
       const menuTriggers = document.querySelectorAll(".js-menu-trigger");
-      const menus = document.querySelectorAll(".js-menu");
-      const actionButtons = document.querySelectorAll(".js-action-btn");
+      const menu = document.getElementById("class-action-menu");
+      const detailBtn = document.getElementById("menu-action-detail");
+      const enrollBtn = document.getElementById("menu-action-enroll");
+      const deleteBtn = document.getElementById("menu-action-delete");
 
-      function closeAllMenus() {
-        menus.forEach(menu => menu.classList.add("hidden"));
-        menuTriggers.forEach(trigger => trigger.setAttribute("aria-expanded", "false"));
+      let activeClassId = null;
+
+      function closeMenu() {
+        menu.classList.add("hidden");
+        activeClassId = null;
       }
 
       menuTriggers.forEach(trigger => {
         trigger.onclick = (event) => {
           event.stopPropagation();
 
-          const classId = trigger.dataset.classId;
-          const menu = document.querySelector(`.js-menu[data-class-id="${classId}"]`);
-          if (!menu) return;
+          const rect = trigger.getBoundingClientRect();
+          activeClassId = trigger.dataset.classId;
 
-          const isHidden = menu.classList.contains("hidden");
-          closeAllMenus();
+          const menuWidth = 192;
+          const padding = 12;
+          let left = rect.right - menuWidth;
+          let top = rect.bottom + 8;
 
-          if (isHidden) {
-            menu.classList.remove("hidden");
-            trigger.setAttribute("aria-expanded", "true");
+          if (left < padding) left = padding;
+          if (left + menuWidth > window.innerWidth - padding) {
+            left = window.innerWidth - menuWidth - padding;
           }
+
+          const estimatedHeight = 140;
+          if (top + estimatedHeight > window.innerHeight - padding) {
+            top = rect.top - estimatedHeight - 8;
+          }
+
+          menu.style.left = `${left}px`;
+          menu.style.top = `${top}px`;
+          menu.classList.remove("hidden");
         };
       });
 
-      menus.forEach(menu => {
-        menu.onclick = (event) => event.stopPropagation();
-      });
+      detailBtn.onclick = async () => {
+        if (!activeClassId) return;
 
-      document.onclick = () => closeAllMenus();
+        await Swal.fire({
+          icon: "info",
+          title: "Detalle de clase",
+          text: `Clase ID: ${activeClassId}`,
+          confirmButtonColor: "#0A1128"
+        });
 
-      actionButtons.forEach(button => {
-        button.onclick = async () => {
-          const action = button.dataset.action;
-          const classId = button.dataset.classId;
+        closeMenu();
+      };
 
-          if (action === "ver-detalle") {
+      enrollBtn.onclick = async () => {
+        if (!activeClassId) return;
+        closeMenu();
+        await openEnrollmentModal(activeClassId);
+      };
+
+      deleteBtn.onclick = async () => {
+        if (!activeClassId) return;
+
+        const result = await Swal.fire({
+          title: "¿Eliminar clase?",
+          text: "Esta acción no se puede deshacer",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#dc2626",
+          cancelButtonColor: "#6b7280",
+          confirmButtonText: "Eliminar",
+          cancelButtonText: "Cancelar"
+        });
+
+        if (!result.isConfirmed) {
+          closeMenu();
+          return;
+        }
+
+        try {
+          const response = await fetch(`/api/classes/${activeClassId}`, {
+            method: "DELETE",
+            credentials: "include"
+          });
+
+          if (!response.ok) {
+            const text = await response.text();
+            console.error("Error eliminando clase:", response.status, text);
+
             await Swal.fire({
-              icon: "info",
-              title: "Detalle de clase",
-              text: `Clase ID: ${classId}`,
-              confirmButtonColor: "#0A1128"
-            });
-          }
-
-          if (action === "inscribir-alumno") {
-            await openEnrollmentModal(classId);
-          }
-
-          if (action === "eliminar-clase") {
-            const result = await Swal.fire({
-              title: "¿Eliminar clase?",
-              text: "Esta acción no se puede deshacer",
-              icon: "warning",
-              showCancelButton: true,
-              confirmButtonColor: "#dc2626",
-              cancelButtonColor: "#6b7280",
-              confirmButtonText: "Eliminar",
-              cancelButtonText: "Cancelar"
+              icon: "error",
+              title: "No se pudo eliminar",
+              text: "No se pudo eliminar la clase",
+              confirmButtonColor: "#dc2626"
             });
 
-            if (!result.isConfirmed) return;
-
-            try {
-              const response = await fetch(`/api/classes/${classId}`, {
-                method: "DELETE",
-                credentials: "include"
-              });
-
-              if (!response.ok) {
-                const text = await response.text();
-                console.error("Error eliminando clase:", response.status, text);
-
-                await Swal.fire({
-                  icon: "error",
-                  title: "No se pudo eliminar",
-                  text: "No se pudo eliminar la clase",
-                  confirmButtonColor: "#dc2626"
-                });
-                return;
-              }
-
-              await Swal.fire({
-                icon: "success",
-                title: "Clase eliminada",
-                text: "La clase fue eliminada correctamente",
-                confirmButtonColor: "#16a34a"
-              });
-
-              await loadClasses();
-            } catch (error) {
-              console.error("Error eliminando clase:", error);
-
-              await Swal.fire({
-                icon: "error",
-                title: "Error",
-                text: "Ocurrió un error al eliminar la clase",
-                confirmButtonColor: "#dc2626"
-              });
-            }
+            closeMenu();
+            return;
           }
 
-          closeAllMenus();
-        };
-      });
+          await Swal.fire({
+            icon: "success",
+            title: "Clase eliminada",
+            text: "La clase fue eliminada correctamente",
+            confirmButtonColor: "#16a34a"
+          });
+
+          await loadClasses();
+        } catch (error) {
+          console.error("Error eliminando clase:", error);
+
+          await Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: "Ocurrió un error al eliminar la clase",
+            confirmButtonColor: "#dc2626"
+          });
+        }
+
+        closeMenu();
+      };
+
+      document.addEventListener("click", closeMenu);
+      window.addEventListener("resize", closeMenu);
+      window.addEventListener("scroll", closeMenu, true);
+      menu.addEventListener("click", (event) => event.stopPropagation());
     }
 
     function initEnrollmentModal() {
