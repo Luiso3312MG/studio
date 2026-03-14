@@ -713,19 +713,24 @@
       const selectedClass = classData.find(clase => Number(clase.id) === Number(classId));
       if (selectedClass && textoClase) {
         textoClase.innerHTML = `
-        <span class="material-symbols-outlined text-sm">event</span>
-        ${selectedClass.classTypeName} - ${formatTime(selectedClass.startTime)}
-      `;
+      <span class="material-symbols-outlined text-sm">event</span>
+      ${selectedClass.classTypeName} - ${formatTime(selectedClass.startTime)}
+    `;
       }
 
       try {
-        const response = await fetch("/api/clients", {
-          credentials: "include"
-        });
+        const [clientsResponse, reservationsResponse] = await Promise.all([
+          fetch("/api/clients", {
+            credentials: "include"
+          }),
+          fetch(`/api/classes/${classId}/reservations`, {
+            credentials: "include"
+          })
+        ]);
 
-        if (!response.ok) {
-          const text = await response.text();
-          console.error("Error cargando alumnos para inscripción:", response.status, text);
+        if (!clientsResponse.ok) {
+          const text = await clientsResponse.text();
+          console.error("Error cargando alumnos para inscripción:", clientsResponse.status, text);
 
           await Swal.fire({
             icon: "error",
@@ -736,11 +741,28 @@
           return;
         }
 
-        const clients = await response.json();
+        if (!reservationsResponse.ok) {
+          const text = await reservationsResponse.text();
+          console.error("Error cargando inscripciones de la clase:", reservationsResponse.status, text);
+
+          await Swal.fire({
+            icon: "error",
+            title: "No se pudieron cargar",
+            text: "No se pudieron cargar los inscritos de la clase",
+            confirmButtonColor: "#dc2626"
+          });
+          return;
+        }
+
+        const clients = await clientsResponse.json();
+        const reservations = await reservationsResponse.json();
+
+        enrolledClientIds = reservations.map(reservation => Number(reservation.clientId));
 
         allClientsForEnrollment = clients
           .filter(client => Number(client.studioId) === Number(studioId))
-          .filter(client => client.status === "ACTIVE");
+          .filter(client => client.status === "ACTIVE")
+          .filter(client => !enrolledClientIds.includes(Number(client.id)));
 
         filteredClientsForEnrollment = [...allClientsForEnrollment];
         renderEnrollmentClients(filteredClientsForEnrollment);
@@ -762,6 +784,7 @@
       const modal = document.getElementById("modal-inscribir-alumno");
       modal?.classList.add("hidden");
       currentClassIdToEnroll = null;
+      enrolledClientIds = [];
     }
 
     function renderEnrollmentClients(clients) {
@@ -772,10 +795,10 @@
 
       if (!clients || clients.length === 0) {
         container.innerHTML = `
-        <div class="p-4 text-sm text-text-main/60 text-center border border-accent-border rounded-lg">
-          No se encontraron alumnos
-        </div>
-      `;
+      <div class="p-4 text-sm text-text-main/60 text-center border border-accent-border rounded-lg">
+        No hay alumnos disponibles para inscribir en esta clase
+      </div>
+    `;
         return;
       }
 
@@ -788,23 +811,23 @@
         row.className = "flex items-center justify-between gap-3 p-3 rounded-lg hover:bg-primary/5 transition-all border border-transparent hover:border-primary/10 group";
 
         row.innerHTML = `
-        <div class="flex items-center gap-3 min-w-0">
-          <div class="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold overflow-hidden text-sm shrink-0">
-            ${initials}
-          </div>
-
-          <div class="min-w-0">
-            <p class="font-semibold text-text-main truncate">${fullName}</p>
-            <p class="text-xs text-text-main/50 truncate">${subtitle}</p>
-          </div>
+      <div class="flex items-center gap-3 min-w-0">
+        <div class="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold overflow-hidden text-sm shrink-0">
+          ${initials}
         </div>
 
-        <button
-          class="bg-primary hover:bg-primary/90 text-white px-4 py-1.5 rounded-lg text-sm font-semibold transition-transform active:scale-95 shadow-sm shrink-0"
-          type="button">
-          Inscribir
-        </button>
-      `;
+        <div class="min-w-0">
+          <p class="font-semibold text-text-main truncate">${fullName}</p>
+          <p class="text-xs text-text-main/50 truncate">${subtitle}</p>
+        </div>
+      </div>
+
+      <button
+        class="bg-primary hover:bg-primary/90 text-white px-4 py-1.5 rounded-lg text-sm font-semibold transition-transform active:scale-95 shadow-sm shrink-0"
+        type="button">
+        Inscribir
+      </button>
+    `;
 
         const button = row.querySelector("button");
         button.addEventListener("click", async () => {
