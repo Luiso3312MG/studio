@@ -6,7 +6,9 @@ import com.kbseed.dto.MeResponse;
 import com.kbseed.entity.UserEntity;
 import com.kbseed.repository.UserRepository;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class AuthService {
@@ -23,19 +25,20 @@ public class AuthService {
         System.out.println(">>> Intentando login con username: " + request.getUsername());
 
         UserEntity user = userRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado en BD"));
-
-        System.out.println(">>> Usuario encontrado: " + user.getUsername());
-        System.out.println(">>> StudioId: " + user.getStudioId());
-        System.out.println(">>> Role: " + user.getRole());
-        System.out.println(">>> Status: " + user.getStatus());
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.UNAUTHORIZED, "Usuario o contraseña incorrectos"
+                ));
 
         if (!user.getPassword().equals(request.getPassword())) {
-            throw new RuntimeException("Contraseña incorrecta");
+            throw new ResponseStatusException(
+                    HttpStatus.UNAUTHORIZED, "Usuario o contraseña incorrectos"
+            );
         }
 
         if (user.getStatus() != null && !user.getStatus().equalsIgnoreCase("ACTIVO")) {
-            throw new RuntimeException("Usuario inactivo");
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN, "Usuario inactivo"
+            );
         }
 
         session.setAttribute("USER_ID", user.getId());
@@ -57,11 +60,11 @@ public class AuthService {
     public MeResponse me() {
         Long userId = (Long) session.getAttribute("USER_ID");
         if (userId == null) {
-            throw new RuntimeException("No autenticado");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "No autenticado");
         }
 
         UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
 
         MeResponse response = new MeResponse();
         response.setId(user.getId());
