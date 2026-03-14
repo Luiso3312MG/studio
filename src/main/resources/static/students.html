@@ -8,6 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
     rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <script>
     tailwind.config = {
@@ -160,7 +161,8 @@
 
       <!-- Table Container -->
       <div class="px-8 flex-1">
-        <div class="bg-white/70 dark:bg-background-dark/20 backdrop-blur-sm border border-accent/20 rounded-3xl overflow-hidden shadow-sm">
+        <div
+          class="bg-white/70 dark:bg-background-dark/20 backdrop-blur-sm border border-accent/20 rounded-3xl overflow-hidden shadow-sm">
           <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
               <thead>
@@ -170,7 +172,8 @@
                   <th class="px-6 py-5 text-sm font-bold text-text-sub uppercase tracking-wider">Teléfono</th>
                   <th class="px-6 py-5 text-sm font-bold text-text-sub uppercase tracking-wider">Nacimiento</th>
                   <th class="px-6 py-5 text-sm font-bold text-text-sub uppercase tracking-wider">Estado</th>
-                  <th class="px-6 py-5 text-sm font-bold text-text-sub uppercase tracking-wider text-right">Acciones</th>
+                  <th class="px-6 py-5 text-sm font-bold text-text-sub uppercase tracking-wider text-right">Acciones
+                  </th>
                 </tr>
               </thead>
               <tbody id="tabla-alumnos-body" class="divide-y divide-accent/5">
@@ -191,7 +194,8 @@
               <span class="material-symbols-outlined">chevron_left</span>
             </button>
 
-            <button class="size-10 flex items-center justify-center rounded-xl bg-accent text-text-main font-bold shadow-sm">
+            <button
+              class="size-10 flex items-center justify-center rounded-xl bg-accent text-text-main font-bold shadow-sm">
               1
             </button>
 
@@ -219,42 +223,36 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label class="block text-sm font-bold mb-1">Nombre</label>
-            <input id="input-first-name" type="text"
-              class="w-full border border-accent/20 rounded-xl px-3 py-2"
+            <input id="input-first-name" type="text" class="w-full border border-accent/20 rounded-xl px-3 py-2"
               placeholder="Nombre" required />
           </div>
 
           <div>
             <label class="block text-sm font-bold mb-1">Apellido</label>
-            <input id="input-last-name" type="text"
-              class="w-full border border-accent/20 rounded-xl px-3 py-2"
+            <input id="input-last-name" type="text" class="w-full border border-accent/20 rounded-xl px-3 py-2"
               placeholder="Apellido" />
           </div>
 
           <div>
             <label class="block text-sm font-bold mb-1">Email</label>
-            <input id="input-email" type="email"
-              class="w-full border border-accent/20 rounded-xl px-3 py-2"
+            <input id="input-email" type="email" class="w-full border border-accent/20 rounded-xl px-3 py-2"
               placeholder="correo@ejemplo.com" />
           </div>
 
           <div>
             <label class="block text-sm font-bold mb-1">Teléfono</label>
-            <input id="input-phone" type="text"
-              class="w-full border border-accent/20 rounded-xl px-3 py-2"
+            <input id="input-phone" type="text" class="w-full border border-accent/20 rounded-xl px-3 py-2"
               placeholder="5512345678" />
           </div>
 
           <div>
             <label class="block text-sm font-bold mb-1">Fecha de nacimiento</label>
-            <input id="input-birth-date" type="date"
-              class="w-full border border-accent/20 rounded-xl px-3 py-2" />
+            <input id="input-birth-date" type="date" class="w-full border border-accent/20 rounded-xl px-3 py-2" />
           </div>
 
           <div>
             <label class="block text-sm font-bold mb-1">Estado</label>
-            <select id="input-status"
-              class="w-full border border-accent/20 rounded-xl px-3 py-2">
+            <select id="input-status" class="w-full border border-accent/20 rounded-xl px-3 py-2">
               <option value="ACTIVE">ACTIVE</option>
               <option value="INACTIVE">INACTIVE</option>
             </select>
@@ -263,21 +261,18 @@
           <div>
             <label class="block text-sm font-bold mb-1">Contacto emergencia</label>
             <input id="input-emergency-name" type="text"
-              class="w-full border border-accent/20 rounded-xl px-3 py-2"
-              placeholder="Nombre contacto" />
+              class="w-full border border-accent/20 rounded-xl px-3 py-2" placeholder="Nombre contacto" />
           </div>
 
           <div>
             <label class="block text-sm font-bold mb-1">Teléfono emergencia</label>
             <input id="input-emergency-phone" type="text"
-              class="w-full border border-accent/20 rounded-xl px-3 py-2"
-              placeholder="5511111111" />
+              class="w-full border border-accent/20 rounded-xl px-3 py-2" placeholder="5511111111" />
           </div>
 
           <div class="md:col-span-2">
             <label class="block text-sm font-bold mb-1">Notas</label>
-            <textarea id="input-notes"
-              class="w-full border border-accent/20 rounded-xl px-3 py-2"
+            <textarea id="input-notes" class="w-full border border-accent/20 rounded-xl px-3 py-2"
               placeholder="Notas del alumno"></textarea>
           </div>
         </div>
@@ -288,8 +283,7 @@
             Cancelar
           </button>
 
-          <button type="submit"
-            class="px-4 py-2 rounded-xl bg-primary text-white font-bold hover:brightness-95">
+          <button type="submit" class="px-4 py-2 rounded-xl bg-primary text-white font-bold hover:brightness-95">
             Crear Alumno
           </button>
         </div>
@@ -301,6 +295,11 @@
     let studioId = 1;
     let clientsData = [];
     let filteredClientsData = [];
+
+    const swalBaseConfig = {
+      confirmButtonColor: "#f4827c",
+      cancelButtonColor: "#6D6766"
+    };
 
     document.addEventListener("DOMContentLoaded", () => {
       loadClients();
@@ -316,6 +315,13 @@
         if (!response.ok) {
           const text = await response.text();
           console.error("Error cargando alumnos:", response.status, text);
+
+          await Swal.fire({
+            ...swalBaseConfig,
+            icon: "error",
+            title: "Error",
+            text: "No se pudieron cargar los alumnos"
+          });
           return;
         }
 
@@ -327,6 +333,13 @@
         renderClientsCount(filteredClientsData);
       } catch (error) {
         console.error("Error cargando alumnos:", error);
+
+        await Swal.fire({
+          ...swalBaseConfig,
+          icon: "error",
+          title: "Error",
+          text: "Ocurrió un error al cargar los alumnos"
+        });
       }
     }
 
@@ -404,7 +417,7 @@
               <div class="flex items-center justify-end gap-2">
                 <button
                   class="flex items-center gap-1 bg-accent/20 hover:bg-accent/40 text-text-main px-3 py-1.5 rounded-lg text-sm font-bold transition-all"
-                  onclick="alert('Después conectamos créditos o membresías')">
+                  onclick="showCreditsInfo()">
                   <span class="material-symbols-outlined text-lg">add_circle</span>
                   Créditos
                 </button>
@@ -474,6 +487,7 @@
 
     function initClientForm() {
       const form = document.getElementById("form-nuevo-alumno");
+      const modal = document.getElementById("modal-nuevo-alumno");
 
       form?.addEventListener("submit", async (event) => {
         event.preventDefault();
@@ -504,24 +518,52 @@
           if (!response.ok) {
             const text = await response.text();
             console.error("Error creando alumno:", response.status, text);
-            alert("No se pudo crear el alumno");
+
+            await Swal.fire({
+              ...swalBaseConfig,
+              icon: "error",
+              title: "Error",
+              text: "No se pudo crear el alumno"
+            });
             return;
           }
 
           await response.json();
-          document.getElementById("modal-nuevo-alumno").classList.add("hidden");
+          modal.classList.add("hidden");
           form.reset();
           await loadClients();
+
+          await Swal.fire({
+            ...swalBaseConfig,
+            icon: "success",
+            title: "Alumno creado",
+            text: "El alumno fue registrado correctamente"
+          });
         } catch (error) {
           console.error("Error creando alumno:", error);
-          alert("Ocurrió un error al crear el alumno");
+
+          await Swal.fire({
+            ...swalBaseConfig,
+            icon: "error",
+            title: "Error",
+            text: "Ocurrió un error al crear el alumno"
+          });
         }
       });
     }
 
     async function deleteClient(id) {
-      const confirmar = confirm("¿Seguro que deseas eliminar este alumno?");
-      if (!confirmar) return;
+      const result = await Swal.fire({
+        ...swalBaseConfig,
+        title: "¿Eliminar alumno?",
+        text: "Esta acción no se puede deshacer",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Sí, eliminar",
+        cancelButtonText: "Cancelar"
+      });
+
+      if (!result.isConfirmed) return;
 
       try {
         const response = await fetch(`/api/clients/${id}`, {
@@ -531,15 +573,43 @@
         if (!response.ok) {
           const text = await response.text();
           console.error("Error eliminando alumno:", response.status, text);
-          alert("No se pudo eliminar el alumno");
+
+          await Swal.fire({
+            ...swalBaseConfig,
+            icon: "error",
+            title: "Error",
+            text: "No se pudo eliminar el alumno"
+          });
           return;
         }
 
         await loadClients();
+
+        await Swal.fire({
+          ...swalBaseConfig,
+          icon: "success",
+          title: "Alumno eliminado",
+          text: "El alumno fue eliminado correctamente"
+        });
       } catch (error) {
         console.error("Error eliminando alumno:", error);
-        alert("Ocurrió un error al eliminar el alumno");
+
+        await Swal.fire({
+          ...swalBaseConfig,
+          icon: "error",
+          title: "Error",
+          text: "Ocurrió un error al eliminar el alumno"
+        });
       }
+    }
+
+    function showCreditsInfo() {
+      Swal.fire({
+        ...swalBaseConfig,
+        icon: "info",
+        title: "Próximamente",
+        text: "Después conectamos créditos o membresías"
+      });
     }
   </script>
 </body>
