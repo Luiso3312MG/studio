@@ -6,6 +6,7 @@ public class MeResponse {
     private String username;
     private String fullName;
     private String role;
+    private String studioName;
 
     public Long getId() {
         return id;
@@ -45,5 +46,13 @@ public class MeResponse {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public String getStudioName() {
+        return studioName;
+    }
+
+    public void setStudioName(String studioName) {
+        this.studioName = studioName;
     }
 }

@@ -5,20 +5,44 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
-        rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
-    body { font-family: 'Manrope', sans-serif; }
+    :root {
+      --theme-background: #F5E9E7;
+      --theme-primary: #111111;
+      --theme-secondary: #ffffff;
+      --theme-text: #0f172a;
+      --theme-border: rgba(15, 23, 42, 0.08);
+    }
+    body {
+      font-family: 'Manrope', sans-serif;
+      background-color: var(--theme-background);
+      color: var(--theme-text);
+    }
+    .theme-primary-bg { background-color: var(--theme-primary) !important; color: #fff !important; }
+    .theme-primary-text { color: var(--theme-primary) !important; }
+    .theme-secondary-bg { background-color: var(--theme-secondary) !important; }
+    .theme-border { border-color: var(--theme-border) !important; }
+    .select2-container--bootstrap-5 .select2-selection {
+      border-radius: 0.75rem;
+      min-height: 46px;
+      border-color: rgba(15, 23, 42, 0.12);
+      padding-top: 0.2rem;
+    }
   </style>
 </head>
-<body class="bg-[#F5E9E7] text-slate-900 min-h-screen">
+<body class="min-h-screen">
 <div class="flex h-screen overflow-hidden">
-  <aside class="w-64 border-r border-black/5 bg-white/70 flex flex-col">
+  <aside class="w-64 border-r theme-border bg-white/75 flex flex-col backdrop-blur">
     <div class="p-6 flex items-center gap-3">
-      <div class="size-10 rounded-full bg-black text-white flex items-center justify-center"><span class="material-symbols-outlined">card_membership</span></div>
+      <div id="brand-badge" class="size-10 rounded-full theme-primary-bg flex items-center justify-center"><span class="material-symbols-outlined">card_membership</span></div>
       <div>
-        <h1 class="text-lg font-bold">Studio Admin</h1>
+        <h1 id="studio-name" class="text-lg font-bold">Studio Admin</h1>
         <p class="text-xs uppercase tracking-widest text-slate-500">Membresías</p>
       </div>
     </div>
@@ -26,10 +50,10 @@
       <a class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-black/5" href="/index.html"><span class="material-symbols-outlined">dashboard</span><span>Dashboard</span></a>
       <a class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-black/5" href="/students.html"><span class="material-symbols-outlined">group</span><span>Alumnos</span></a>
       <a class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-black/5" href="/class-admin.html"><span class="material-symbols-outlined">settings_applications</span><span>Config. clases</span></a>
-      <a class="flex items-center gap-3 px-4 py-3 rounded-xl bg-black text-white" href="/memberships.html"><span class="material-symbols-outlined">card_membership</span><span>Membresías</span></a>
+      <a id="memberships-nav" class="flex items-center gap-3 px-4 py-3 rounded-xl theme-primary-bg" href="/memberships.html"><span class="material-symbols-outlined">card_membership</span><span>Membresías</span></a>
     </nav>
     <div class="p-4 mt-auto">
-      <button id="btn-logout" class="w-full rounded-xl border border-black/10 px-4 py-3 font-semibold">Cerrar sesión</button>
+      <button id="btn-logout" class="w-full rounded-xl border theme-border px-4 py-3 font-semibold theme-secondary-bg">Cerrar sesión</button>
     </div>
   </aside>
   <main class="flex-1 overflow-y-auto p-8 space-y-8">
@@ -39,7 +63,7 @@
     </header>
 
     <section class="grid grid-cols-1 xl:grid-cols-5 gap-6">
-      <article class="xl:col-span-2 bg-white rounded-2xl shadow-sm border border-black/5 p-6">
+      <article class="xl:col-span-2 theme-secondary-bg rounded-2xl shadow-sm border theme-border p-6">
         <div class="flex items-center justify-between mb-4">
           <h3 class="text-xl font-bold">Activar o renovar</h3>
           <span class="text-sm text-slate-500">Pago completo</span>
@@ -47,7 +71,7 @@
         <form id="membership-form" class="space-y-4">
           <div>
             <label class="block text-sm font-semibold mb-1">Alumno</label>
-            <select id="client-select" class="w-full rounded-xl border-black/10"></select>
+            <select id="client-select" class="w-full"></select>
           </div>
           <div>
             <label class="block text-sm font-semibold mb-1">Plan</label>
@@ -56,7 +80,7 @@
           </div>
           <div>
             <label class="block text-sm font-semibold mb-2">Disciplinas permitidas</label>
-            <div id="disciplines-box" class="grid grid-cols-1 md:grid-cols-2 gap-2 rounded-xl border border-black/10 p-3 min-h-20 bg-slate-50"></div>
+            <div id="disciplines-box" class="grid grid-cols-1 md:grid-cols-2 gap-2 rounded-xl border theme-border p-3 min-h-20 bg-slate-50"></div>
           </div>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -82,44 +106,45 @@
               <input id="notes-input" type="text" class="w-full rounded-xl border-black/10" placeholder="Opcional" />
             </div>
           </div>
-          <button class="w-full rounded-xl bg-black text-white py-3 font-bold" type="submit">Guardar membresía</button>
+          <button id="save-membership-btn" class="w-full rounded-xl theme-primary-bg py-3 font-bold" type="submit">Guardar membresía</button>
         </form>
       </article>
 
-      <article class="xl:col-span-3 bg-white rounded-2xl shadow-sm border border-black/5 p-6">
+      <article class="xl:col-span-3 theme-secondary-bg rounded-2xl shadow-sm border theme-border p-6">
         <div class="flex items-center justify-between mb-4">
           <div>
             <h3 class="text-xl font-bold">Membresía actual del alumno</h3>
             <p class="text-sm text-slate-500">Puedes editar las disciplinas sin cambiar el plan.</p>
           </div>
-          <button id="refresh-current" class="rounded-xl border border-black/10 px-4 py-2 font-semibold">Recargar</button>
+          <button id="refresh-current" class="rounded-xl border theme-border px-4 py-2 font-semibold theme-secondary-bg">Recargar</button>
         </div>
-        <div id="current-membership-card" class="rounded-2xl bg-slate-50 border border-black/5 p-5 text-slate-600">Selecciona un alumno para ver su membresía actual.</div>
+        <div id="current-membership-card" class="rounded-2xl bg-slate-50 border theme-border p-5 text-slate-600">Selecciona un alumno para ver su membresía actual.</div>
         <div id="edit-disciplines-wrapper" class="hidden mt-4">
           <label class="block text-sm font-semibold mb-2">Editar disciplinas actuales</label>
-          <div id="edit-disciplines-box" class="grid grid-cols-1 md:grid-cols-2 gap-2 rounded-xl border border-black/10 p-3 bg-slate-50"></div>
-          <button id="save-disciplines-btn" class="mt-4 rounded-xl bg-slate-900 text-white px-4 py-2 font-semibold">Guardar disciplinas</button>
+          <div id="edit-disciplines-box" class="grid grid-cols-1 md:grid-cols-2 gap-2 rounded-xl border theme-border p-3 bg-slate-50"></div>
+          <button id="save-disciplines-btn" class="mt-4 rounded-xl theme-primary-bg px-4 py-2 font-semibold">Guardar disciplinas</button>
         </div>
       </article>
     </section>
 
-    <section class="bg-white rounded-2xl shadow-sm border border-black/5 p-6">
+    <section class="theme-secondary-bg rounded-2xl shadow-sm border theme-border p-6">
       <div class="flex items-center justify-between mb-4">
         <div>
           <h3 class="text-xl font-bold">Resumen por alumno</h3>
-          <p class="text-sm text-slate-500">Aquí verás vencimiento, plan y complementos restantes.</p>
+          <p class="text-sm text-slate-500">Aquí verás vencimiento, plan, disponibilidad del día y complementos restantes.</p>
         </div>
-        <button id="refresh-overview" class="rounded-xl border border-black/10 px-4 py-2 font-semibold">Actualizar</button>
+        <button id="refresh-overview" class="rounded-xl border theme-border px-4 py-2 font-semibold theme-secondary-bg">Actualizar</button>
       </div>
       <div class="overflow-x-auto">
         <table class="w-full text-left">
           <thead>
-          <tr class="border-b border-black/5 text-sm uppercase tracking-wider text-slate-500">
+          <tr class="border-b theme-border text-sm uppercase tracking-wider text-slate-500">
             <th class="py-3 pr-4">Alumno</th>
             <th class="py-3 pr-4">Plan</th>
             <th class="py-3 pr-4">Estado</th>
             <th class="py-3 pr-4">Vence</th>
             <th class="py-3 pr-4">Disciplinas</th>
+            <th class="py-3 pr-4">Clase hoy</th>
             <th class="py-3 pr-4">Preso</th>
             <th class="py-3">Aparato</th>
           </tr>
@@ -137,14 +162,24 @@ let clients = [];
 let plans = [];
 let disciplines = [];
 let currentMembership = null;
+let themeConfig = null;
 
 async function fetchJson(url, options = {}) {
   const response = await fetch(url, { credentials: 'include', ...options });
   if (!response.ok) {
     const text = await response.text();
-    throw new Error(text || 'Error en la petición');
+    try {
+      const parsed = JSON.parse(text);
+      throw new Error(parsed.message || parsed.error || text || 'Error en la petición');
+    } catch (_) {
+      throw new Error(text || 'Error en la petición');
+    }
   }
   return response.status === 204 ? null : response.json();
+}
+
+function parseError(error) {
+  return error?.message || 'No se pudo completar la operación';
 }
 
 async function validarSesion() {
@@ -152,6 +187,7 @@ async function validarSesion() {
     const user = await fetchJson('/api/auth/me');
     currentUser = user;
     studioId = user.studioId;
+    document.getElementById('studio-name').textContent = user.studioName || 'Studio Admin';
     return true;
   } catch {
     window.location.href = '/login.html';
@@ -159,10 +195,19 @@ async function validarSesion() {
   }
 }
 
+function applyTheme(theme) {
+  themeConfig = theme || {};
+  const root = document.documentElement;
+  root.style.setProperty('--theme-background', theme?.backgroundColor || '#F5E9E7');
+  root.style.setProperty('--theme-primary', theme?.primaryColor || '#111111');
+  root.style.setProperty('--theme-secondary', theme?.secondaryColor || '#ffffff');
+  root.style.setProperty('--theme-border', 'rgba(15,23,42,0.08)');
+}
+
 async function cargarTema() {
   try {
     const theme = await fetchJson('/api/themes/current');
-    if (theme?.backgroundColor) document.body.style.backgroundColor = theme.backgroundColor;
+    applyTheme(theme);
   } catch (_) {}
 }
 
@@ -182,7 +227,7 @@ function renderDisciplineCheckboxes(containerId, allowedCount, selectedIds = [],
     return;
   }
   container.innerHTML = disciplines.map(item => `
-    <label class="flex items-center gap-2 rounded-lg bg-white border border-black/5 px-3 py-2 text-sm">
+    <label class="flex items-center gap-2 rounded-lg bg-white border theme-border px-3 py-2 text-sm">
       <input type="checkbox" value="${item.id}" ${selectedIds.includes(item.id) ? 'checked' : ''} class="rounded border-black/20" />
       <span>${item.name}</span>
     </label>
@@ -192,17 +237,27 @@ function renderDisciplineCheckboxes(containerId, allowedCount, selectedIds = [],
       const checked = getSelectedDisciplineIds(containerId);
       if (checked.length > allowedCount) {
         box.checked = false;
-        Swal.fire({ icon: 'warning', title: 'Límite de disciplinas', text: `Este plan permite ${allowedCount} disciplina(s).` });
+        Swal.fire({ icon: 'warning', title: 'Límite de disciplinas', text: `Este plan permite ${allowedCount} disciplina(s).`, confirmButtonColor: themeConfig?.primaryColor || '#111111' });
       }
     });
   });
 }
 
 function fillSelectors() {
-  const clientSelect = document.getElementById('client-select');
-  clientSelect.innerHTML = clients.map(item => optionHtml(item.id, `${item.firstName} ${item.lastName || ''}`.trim())).join('');
   const planSelect = document.getElementById('plan-select');
   planSelect.innerHTML = plans.map(item => optionHtml(item.id, `${item.name} · $${item.price}`)).join('');
+
+  const clientSelect = $('#client-select');
+  clientSelect.empty();
+  clients.forEach(item => clientSelect.append(new Option(`${item.firstName} ${item.lastName || ''}`.trim(), item.id, false, false)));
+  clientSelect.select2({
+    theme: 'bootstrap-5',
+    width: '100%',
+    placeholder: 'Buscar alumno...',
+    allowClear: false
+  });
+  clientSelect.on('change', loadCurrentMembership);
+
   if (plans.length) onPlanChange();
 }
 
@@ -212,6 +267,10 @@ function onPlanChange() {
   document.getElementById('amount-input').value = plan.price;
   document.getElementById('plan-summary').textContent = `${plan.daysDuration} días · ${plan.allowsAllDisciplines ? 'todas las disciplinas' : `${plan.disciplineLimit} disciplina(s)`} · Complemento: ${plan.includesComplement ? `Preso ${plan.presotherapySessions} / Aparato ${plan.aparatologySessions}` : 'no'}`;
   renderDisciplineCheckboxes('disciplines-box', plan.disciplineLimit, [], plan.allowsAllDisciplines);
+}
+
+function reservationBadge(canReserve, message) {
+  return `<div class="rounded-xl px-3 py-2 ${canReserve ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'} text-sm font-semibold">${message || '-'}</div>`;
 }
 
 function renderCurrentMembership(data) {
@@ -231,6 +290,7 @@ function renderCurrentMembership(data) {
       <div><p class="text-xs uppercase text-slate-500">Disciplinas</p><p class="font-semibold text-slate-900">${(data.disciplineNames || []).join(', ') || 'Todas las disciplinas'}</p></div>
       <div><p class="text-xs uppercase text-slate-500">Presoterapia restante</p><p class="font-semibold text-slate-900">${data.remainingPresotherapySessions ?? 0}</p></div>
       <div><p class="text-xs uppercase text-slate-500">Aparatología restante</p><p class="font-semibold text-slate-900">${data.remainingAparatologySessions ?? 0}</p></div>
+      <div class="md:col-span-3"><p class="text-xs uppercase text-slate-500 mb-2">Reserva de clase hoy</p>${reservationBadge(data.canReserveDisciplineToday, data.reservationAvailabilityMessage)}</div>
     </div>`;
   const plan = plans.find(item => item.id === data.membershipPlanId);
   if (plan && !plan.allowsAllDisciplines) {
@@ -242,12 +302,12 @@ function renderCurrentMembership(data) {
 }
 
 async function loadCurrentMembership() {
-  const clientId = document.getElementById('client-select').value;
+  const clientId = Number($('#client-select').val());
   if (!clientId) return;
   try {
     const data = await fetchJson(`/api/memberships/client/${clientId}`);
     renderCurrentMembership(data);
-  } catch (error) {
+  } catch {
     renderCurrentMembership(null);
   }
 }
@@ -255,12 +315,13 @@ async function loadCurrentMembership() {
 async function loadOverview() {
   const rows = await fetchJson('/api/memberships/overview');
   document.getElementById('overview-body').innerHTML = rows.map(item => `
-    <tr class="border-b border-black/5 text-sm">
+    <tr class="border-b theme-border text-sm align-top">
       <td class="py-3 pr-4"><div class="font-semibold">${item.clientName}</div><div class="text-slate-500">${item.clientEmail || ''}</div></td>
       <td class="py-3 pr-4">${item.planName || '-'}</td>
       <td class="py-3 pr-4">${item.membershipStatus || '-'}</td>
       <td class="py-3 pr-4">${item.membershipEndDate || '-'}</td>
       <td class="py-3 pr-4">${(item.disciplines || []).join(', ') || '-'}</td>
+      <td class="py-3 pr-4">${item.reservationAvailabilityMessage || '-'}</td>
       <td class="py-3 pr-4">${item.remainingPresotherapySessions ?? 0}</td>
       <td class="py-3">${item.remainingAparatologySessions ?? 0}</td>
     </tr>
@@ -282,7 +343,6 @@ async function bootstrap() {
 }
 
 document.getElementById('plan-select').addEventListener('change', onPlanChange);
-document.getElementById('client-select').addEventListener('change', loadCurrentMembership);
 document.getElementById('refresh-overview').addEventListener('click', loadOverview);
 document.getElementById('refresh-current').addEventListener('click', loadCurrentMembership);
 document.getElementById('btn-logout').addEventListener('click', async () => {
@@ -302,16 +362,16 @@ document.getElementById('membership-form').addEventListener('submit', async (eve
     notes: document.getElementById('notes-input').value
   };
   try {
-    await fetchJson(`/api/memberships/client/${document.getElementById('client-select').value}/activate`, {
+    await fetchJson(`/api/memberships/client/${Number($('#client-select').val())}/activate`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
-    await Swal.fire({ icon: 'success', title: 'Membresía guardada', text: 'La membresía quedó activa o renovada.' });
+    await Swal.fire({ icon: 'success', title: 'Membresía guardada', text: 'La membresía quedó activa o renovada.', confirmButtonColor: themeConfig?.primaryColor || '#111111' });
     await loadCurrentMembership();
     await loadOverview();
   } catch (error) {
-    await Swal.fire({ icon: 'error', title: 'No se pudo guardar', text: error.message });
+    await Swal.fire({ icon: 'error', title: 'No se pudo guardar', text: parseError(error), confirmButtonColor: themeConfig?.primaryColor || '#111111' });
   }
 });
 
@@ -323,11 +383,11 @@ document.getElementById('save-disciplines-btn').addEventListener('click', async 
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ disciplineIds: getSelectedDisciplineIds('edit-disciplines-box') })
     });
-    await Swal.fire({ icon: 'success', title: 'Disciplinas actualizadas' });
+    await Swal.fire({ icon: 'success', title: 'Disciplinas actualizadas', confirmButtonColor: themeConfig?.primaryColor || '#111111' });
     await loadCurrentMembership();
     await loadOverview();
   } catch (error) {
-    await Swal.fire({ icon: 'error', title: 'No se pudo actualizar', text: error.message });
+    await Swal.fire({ icon: 'error', title: 'No se pudo actualizar', text: parseError(error), confirmButtonColor: themeConfig?.primaryColor || '#111111' });
   }
 });
 

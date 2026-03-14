@@ -76,11 +76,13 @@ public class MembershipService {
                 dto.setPlanName(plan != null ? plan.getName() : null);
                 dto.setMembershipEndDate(membership.getEndDate());
                 dto.setDisciplines(getDisciplineNames(membership));
+                dto.setReservationAvailabilityMessage(getDisciplineReservationAvailabilityMessage(membership));
                 dto.setRemainingPresotherapySessions(calculateRemainingComplementSessions(membership, "PRESOTERAPIA"));
                 dto.setRemainingAparatologySessions(calculateRemainingComplementSessions(membership, "APARATOLOGIA"));
             } else {
                 dto.setMembershipStatus("SIN_MEMBRESIA");
                 dto.setDisciplines(List.of());
+                dto.setReservationAvailabilityMessage("No cuenta con membresía activa");
                 dto.setRemainingPresotherapySessions(0);
                 dto.setRemainingAparatologySessions(0);
             }
@@ -197,6 +199,35 @@ public class MembershipService {
         return Math.max(0, total - (int) used);
     }
 
+    public String getDisciplineReservationAvailabilityMessage(ClientMembershipEntity membership) {
+        if (membership == null) {
+            return "No cuenta con membresía activa";
+        }
+        if (membership.getEndDate().isBefore(LocalDate.now())) {
+            return "La membresía está vencida";
+        }
+        List<ReservationEntity> existingReservations = reservationRepository.findByClientIdAndReservationStatusIn(
+                membership.getClientId(), List.of("RESERVADO", "ASISTIO", "NO_ASISTIO"));
+        if (existingReservations.isEmpty()) {
+            return "Puede reservar una clase de disciplina hoy";
+        }
+        Map<Long, ClassEntity> classesById = classRepository.findByIdIn(existingReservations.stream().map(ReservationEntity::getClassId).toList())
+                .stream().collect(Collectors.toMap(ClassEntity::getId, Function.identity()));
+        Map<String, ClassTypeEntity> typesByName = classTypeRepository.findByStudioId(membership.getStudioId()).stream()
+                .collect(Collectors.toMap(ClassTypeEntity::getName, Function.identity(), (a, b) -> a));
+        boolean hasDisciplineToday = existingReservations.stream().anyMatch(existing -> {
+            ClassEntity classEntity = classesById.get(existing.getClassId());
+            if (classEntity == null || !classEntity.getClassDate().equals(LocalDate.now())) return false;
+            ClassTypeEntity classType = typesByName.get(classEntity.getClassTypeName());
+            return classType != null && "DISCIPLINA".equals(classType.getCategory());
+        });
+        return hasDisciplineToday ? "Ya tiene una clase activa, cursada o no asistida para hoy" : "Puede reservar una clase de disciplina hoy";
+    }
+
+    public boolean canReserveDisciplineToday(ClientMembershipEntity membership) {
+        return "Puede reservar una clase de disciplina hoy".equals(getDisciplineReservationAvailabilityMessage(membership));
+    }
+
     public List<String> getDisciplineNames(ClientMembershipEntity membership) {
         Map<Long, ClassTypeEntity> typeMap = classTypeRepository.findByStudioId(membership.getStudioId()).stream()
                 .collect(Collectors.toMap(ClassTypeEntity::getId, Function.identity()));
@@ -256,6 +287,8 @@ public class MembershipService {
         dto.setDisciplineNames(getDisciplineNames(membership));
         dto.setRemainingPresotherapySessions(calculateRemainingComplementSessions(membership, "PRESOTERAPIA"));
         dto.setRemainingAparatologySessions(calculateRemainingComplementSessions(membership, "APARATOLOGIA"));
+        dto.setCanReserveDisciplineToday(canReserveDisciplineToday(membership));
+        dto.setReservationAvailabilityMessage(getDisciplineReservationAvailabilityMessage(membership));
         return dto;
     }
 

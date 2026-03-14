@@ -57,7 +57,15 @@ public class ReservationService {
         ClassTypeEntity classType = classTypeRepository.findByStudioIdAndName(classEntity.getStudioId(), classEntity.getClassTypeName())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Tipo de clase no encontrado"));
 
+        LocalDateTime classStart = LocalDateTime.of(classEntity.getClassDate(), classEntity.getStartTime());
+        if (!classStart.isAfter(LocalDateTime.now())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "No se puede inscribir en clases anteriores o que ya iniciaron");
+        }
+
         ClientMembershipEntity membership = membershipService.requireActiveMembership(clientEntity.getId(), classEntity.getStudioId());
+        if (classEntity.getClassDate().isBefore(membership.getStartDate()) || classEntity.getClassDate().isAfter(membership.getEndDate())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "La clase está fuera de la vigencia de la membresía activa");
+        }
 
         if (reservationRepository.existsByClassIdAndClientIdAndReservationStatusIn(classId, request.getClientId(), ACTIVE_STATUSES)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "El alumno ya está inscrito en esta clase");

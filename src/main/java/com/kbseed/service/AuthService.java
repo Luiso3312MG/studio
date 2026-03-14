@@ -3,7 +3,9 @@ package com.kbseed.service;
 import com.kbseed.dto.AuthRequest;
 import com.kbseed.dto.AuthResponse;
 import com.kbseed.dto.MeResponse;
+import com.kbseed.entity.StudioEntity;
 import com.kbseed.entity.UserEntity;
+import com.kbseed.repository.StudioRepository;
 import com.kbseed.repository.UserRepository;
 import com.kbseed.support.SessionContext;
 import jakarta.servlet.http.HttpSession;
@@ -19,12 +21,14 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final HttpSession session;
     private final SessionContext sessionContext;
+    private final StudioRepository studioRepository;
 
-    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, HttpSession session, SessionContext sessionContext) {
+    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, HttpSession session, SessionContext sessionContext, StudioRepository studioRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.session = session;
         this.sessionContext = sessionContext;
+        this.studioRepository = studioRepository;
     }
 
     public AuthResponse login(AuthRequest request) {
@@ -58,9 +62,12 @@ public class AuthService {
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
 
+        StudioEntity studio = user.getStudioId() != null ? studioRepository.findById(user.getStudioId()).orElse(null) : null;
+
         MeResponse response = new MeResponse();
         response.setId(user.getId());
         response.setStudioId(user.getStudioId());
+        response.setStudioName(studio != null ? studio.getName() : "Studio Admin");
         response.setUsername(user.getEmail());
         response.setFullName(user.getFullName());
         response.setRole(user.getRoleId() != null ? user.getRoleId().toString() : "ADMIN");

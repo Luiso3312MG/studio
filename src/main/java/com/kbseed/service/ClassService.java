@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
@@ -148,7 +149,7 @@ public class ClassService {
         dto.setEndTime(entity.getEndTime());
         dto.setCapacity(entity.getCapacity());
         dto.setCapacityTotal(entity.getCapacityTotal());
-        dto.setStatus(entity.getStatus());
+        dto.setStatus(resolveDynamicStatus(entity));
         return dto;
     }
 
@@ -166,6 +167,26 @@ public class ClassService {
         entity.setCapacityTotal(dto.getCapacityTotal());
         entity.setStatus(dto.getStatus());
         return entity;
+    }
+
+
+    private String resolveDynamicStatus(ClassEntity entity) {
+        if (entity.getClassDate() == null || entity.getStartTime() == null || entity.getEndTime() == null) {
+            return entity.getStatus();
+        }
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime start = LocalDateTime.of(entity.getClassDate(), entity.getStartTime());
+        LocalDateTime end = LocalDateTime.of(entity.getClassDate(), entity.getEndTime());
+        if (end.isBefore(now)) {
+            return "FINALIZADA";
+        }
+        if ((start.isBefore(now) || start.isEqual(now)) && end.isAfter(now)) {
+            return "EN_CURSO";
+        }
+        if (Optional.ofNullable(entity.getCapacity()).orElse(0) <= 0) {
+            return "LLENA";
+        }
+        return "DISPONIBLE";
     }
 
     private int mapDayOfWeekToFrontend(DayOfWeek dayOfWeek) {

@@ -38,23 +38,25 @@
       }
     }
 
+    function applyTheme(theme) {
+      if (!theme) return;
+      if (theme.backgroundColor) document.documentElement.style.setProperty('--theme-background', theme.backgroundColor);
+      if (theme.primaryColor) {
+        document.documentElement.style.setProperty('--primary', theme.primaryColor);
+        const badge = document.getElementById('brand-badge');
+        if (badge) badge.style.backgroundColor = theme.primaryColor;
+      }
+    }
+
     async function cargarTema() {
       try {
         const response = await fetch("/api/themes/current", {
           method: "GET",
           credentials: "include"
         });
-
-        console.log("STATUS /api/themes/current:", response.status);
-
         if (!response.ok) return;
-
         const theme = await response.json();
-        console.log("Tema cargado:", theme);
-
-        if (theme.backgroundColor) {
-          document.body.style.backgroundColor = theme.backgroundColor;
-        }
+        applyTheme(theme);
       } catch (error) {
         console.error("Error cargando tema:", error);
       }
@@ -65,6 +67,8 @@
       if (!currentUser) return false;
 
       studioId = currentUser.studioId;
+      const studioName = document.getElementById("studio-admin-name");
+      if (studioName) studioName.textContent = currentUser.studioName || "Studio Admin";
       await cargarTema();
       return true;
     }
@@ -79,6 +83,26 @@
       initSearch();
       initLogout();
     });
+  </script>
+
+
+  <script>
+    async function extractErrorMessage(response, fallback) {
+      const text = await response.text();
+      try {
+        const parsed = JSON.parse(text);
+        return parsed.message || parsed.error || fallback;
+      } catch {
+        return text || fallback;
+      }
+    }
+
+    function normalizeLogoutButton() {
+      const btnLogout = document.getElementById("btn-logout");
+      if (!btnLogout) return;
+      btnLogout.textContent = "Cerrar sesión";
+      btnLogout.className = "logout-pill";
+    }
   </script>
 
   <script>
@@ -122,11 +146,25 @@
     :root {
       --text: #000000;
       --primary: #111111;
+      --theme-background: #F5E9E7;
+      --theme-secondary: #ffffff;
     }
 
     body {
       font-family: 'Manrope', sans-serif;
       color: var(--text);
+      background-color: var(--theme-background);
+    }
+
+    .logout-pill {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border-radius: 0.75rem;
+      border: 1px solid rgba(0,0,0,0.08);
+      background: #fff;
+      font-weight: 700;
+      text-align: center;
+      cursor: pointer;
     }
 
     .material-symbols-outlined {
@@ -150,11 +188,11 @@
     <!-- Sidebar Navigation -->
     <aside class="w-64 border-r border-accent/30 bg-background-light/50 dark:bg-background-dark/50 flex flex-col">
       <div class="p-6 flex items-center gap-3">
-        <div class="size-10 rounded-full bg-primary flex items-center justify-center text-white">
+        <div id="brand-badge" class="size-10 rounded-full bg-primary flex items-center justify-center text-white">
           <span class="material-symbols-outlined">auto_awesome</span>
         </div>
         <div>
-          <h1 class="text-lg font-bold leading-tight tracking-tight">Studio Admin</h1>
+          <h1 class="text-lg font-bold leading-tight tracking-tight" id="studio-admin-name">Studio Admin</h1>
           <p class="text-xs text-text-sub uppercase tracking-widest font-semibold">Premium Management</p>
         </div>
       </div>
@@ -607,13 +645,13 @@
           });
 
           if (!response.ok) {
-            const text = await response.text();
-            console.error("Error creando alumno:", response.status, text);
+            const errorMessage = await extractErrorMessage(response, "No se pudo crear el alumno");
+            console.error("Error creando alumno:", response.status, errorMessage);
 
             await Swal.fire({
               icon: "error",
               title: "Error",
-              text: "No se pudo crear el alumno",
+              text: errorMessage,
               confirmButtonColor: "#dc2626"
             });
             return;
@@ -664,13 +702,13 @@
         });
 
         if (!response.ok) {
-          const text = await response.text();
-          console.error("Error eliminando alumno:", response.status, text);
+          const errorMessage = await extractErrorMessage(response, "No se pudo eliminar el alumno");
+          console.error("Error eliminando alumno:", response.status, errorMessage);
 
           await Swal.fire({
             icon: "error",
             title: "Error",
-            text: "No se pudo eliminar el alumno",
+            text: errorMessage,
             confirmButtonColor: "#dc2626"
           });
           return;
@@ -705,9 +743,14 @@
       });
     }
 
+    function parseError(error) {
+      return error?.message || "No se pudo completar la operación";
+    }
+
     function initLogout() {
       const btnLogout = document.getElementById("btn-logout");
       if (!btnLogout) return;
+      normalizeLogoutButton();
 
       btnLogout.addEventListener("click", async () => {
         const result = await Swal.fire({

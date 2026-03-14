@@ -17,6 +17,8 @@ public class ClientMembershipDTO {
     private List<String> disciplineNames;
     private Integer remainingPresotherapySessions;
     private Integer remainingAparatologySessions;
+    private Boolean canReserveDisciplineToday;
+    private String reservationAvailabilityMessage;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -42,4 +44,9 @@ public class ClientMembershipDTO {
     public void setRemainingPresotherapySessions(Integer remainingPresotherapySessions) { this.remainingPresotherapySessions = remainingPresotherapySessions; }
     public Integer getRemainingAparatologySessions() { return remainingAparatologySessions; }
     public void setRemainingAparatologySessions(Integer remainingAparatologySessions) { this.remainingAparatologySessions = remainingAparatologySessions; }
+
+    public Boolean getCanReserveDisciplineToday() { return canReserveDisciplineToday; }
+    public void setCanReserveDisciplineToday(Boolean canReserveDisciplineToday) { this.canReserveDisciplineToday = canReserveDisciplineToday; }
+    public String getReservationAvailabilityMessage() { return reservationAvailabilityMessage; }
+    public void setReservationAvailabilityMessage(String reservationAvailabilityMessage) { this.reservationAvailabilityMessage = reservationAvailabilityMessage; }
 }

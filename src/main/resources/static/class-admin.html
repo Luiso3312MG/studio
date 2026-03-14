@@ -43,6 +43,19 @@
       }
     }
 
+    function applyTheme(theme) {
+      const root = document.documentElement;
+      if (theme.backgroundColor) root.style.setProperty('--theme-background', theme.backgroundColor);
+      if (theme.primaryColor) root.style.setProperty('--theme-primary', theme.primaryColor);
+      if (theme.secondaryColor) root.style.setProperty('--theme-secondary', theme.secondaryColor);
+      document.querySelectorAll('.sidebar-item-active').forEach(el => {
+        el.style.backgroundColor = theme.primaryColor || '#111111';
+        el.style.color = '#ffffff';
+      });
+      const badge = document.getElementById('brand-badge');
+      if (badge) badge.style.backgroundColor = theme.primaryColor || '#111111';
+    }
+
     async function cargarTema() {
       try {
         const response = await fetch("/api/themes/current", {
@@ -50,16 +63,9 @@
           credentials: "include"
         });
 
-        console.log("STATUS /api/themes/current:", response.status);
-
         if (!response.ok) return;
-
         const theme = await response.json();
-        console.log("Tema cargado:", theme);
-
-        if (theme.backgroundColor) {
-          document.body.style.backgroundColor = theme.backgroundColor;
-        }
+        applyTheme(theme);
       } catch (error) {
         console.error("Error cargando tema:", error);
       }
@@ -70,6 +76,8 @@
       if (!currentUser) return false;
 
       studioId = currentUser.studioId;
+      const studioName = document.getElementById("studio-admin-name");
+      if (studioName) studioName.textContent = currentUser.studioName || "Studio Admin";
       await cargarTema();
       return true;
     }
@@ -83,8 +91,39 @@
       await loadRooms();
       await loadClassTypes();
       fillSelects();
+      initTimeHelpers();
       initLogout();
     });
+  </script>
+
+
+  <script>
+    async function extractErrorMessage(response, fallback) {
+      const text = await response.text();
+      try {
+        const parsed = JSON.parse(text);
+        return parsed.message || parsed.error || fallback;
+      } catch {
+        return text || fallback;
+      }
+    }
+
+    function normalizeLogoutButton() {
+      const btnLogout = document.getElementById("btn-logout");
+      if (!btnLogout) return;
+      btnLogout.textContent = "Cerrar sesión";
+      btnLogout.className = "logout-pill";
+    }
+
+    function plusMinutesToHHMM(timeValue, minutes) {
+      if (!timeValue) return "";
+      const [hours, mins] = timeValue.split(":").map(Number);
+      const total = hours * 60 + mins + minutes;
+      const finalMinutes = ((total % (24 * 60)) + (24 * 60)) % (24 * 60);
+      const hh = String(Math.floor(finalMinutes / 60)).padStart(2, "0");
+      const mm = String(finalMinutes % 60).padStart(2, "0");
+      return `${hh}:${mm}`;
+    }
   </script>
 
   <script>
@@ -116,13 +155,31 @@
   </script>
 
   <style>
+    :root {
+      --theme-background: #F5E9E7;
+      --theme-primary: #111111;
+      --theme-secondary: #ffffff;
+      --theme-text: #2B2B2B;
+      --theme-border: #D6C3A5;
+    }
     body {
       font-family: 'Manrope', sans-serif;
+      background-color: var(--theme-background);
+      color: var(--theme-text);
     }
-
     .sidebar-item-active {
-      background-color: #111111;
+      background-color: var(--theme-primary);
       color: white;
+    }
+    .logout-pill {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border-radius: 0.75rem;
+      border: 1px solid rgba(0,0,0,0.08);
+      background: #fff;
+      font-weight: 700;
+      text-align: center;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -133,11 +190,11 @@
     <!-- Sidebar -->
     <aside class="w-64 flex flex-col border-r border-accent-border bg-background-light px-4 py-6">
       <div class="flex items-center gap-3 px-2 mb-10">
-        <div class="size-10 rounded-full bg-primary flex items-center justify-center text-white">
+        <div id="brand-badge" class="size-10 rounded-full bg-primary flex items-center justify-center text-white">
           <span class="material-symbols-outlined">tune</span>
         </div>
         <div class="flex flex-col">
-          <h1 class="text-base font-bold leading-tight">Studio Admin</h1>
+          <h1 id="studio-admin-name" class="text-base font-bold leading-tight">Studio Admin</h1>
           <p class="text-text-main/60 text-xs font-medium uppercase tracking-wider">Configuración</p>
         </div>
       </div>
@@ -374,13 +431,13 @@
 
                 <div>
                   <label class="block text-sm font-bold mb-1">Hora inicio</label>
-                  <input id="single-start" type="time"
+                  <input id="single-start" type="time" step="900"
                     class="w-full border border-accent-border rounded-lg px-3 py-2" required />
                 </div>
 
                 <div>
                   <label class="block text-sm font-bold mb-1">Hora fin</label>
-                  <input id="single-end" type="time" class="w-full border border-accent-border rounded-lg px-3 py-2"
+                  <input id="single-end" type="time" step="900" class="w-full border border-accent-border rounded-lg px-3 py-2"
                     required />
                 </div>
               </div>
@@ -437,13 +494,13 @@
               <div class="grid grid-cols-3 gap-4">
                 <div>
                   <label class="block text-sm font-bold mb-1">Hora inicio</label>
-                  <input id="recurring-start-time" type="time"
+                  <input id="recurring-start-time" type="time" step="900"
                     class="w-full border border-accent-border rounded-lg px-3 py-2" required />
                 </div>
 
                 <div>
                   <label class="block text-sm font-bold mb-1">Hora fin</label>
-                  <input id="recurring-end-time" type="time"
+                  <input id="recurring-end-time" type="time" step="900"
                     class="w-full border border-accent-border rounded-lg px-3 py-2" required />
                 </div>
 
@@ -478,6 +535,25 @@
   </div>
 
   <script>
+
+    function syncEndTime(typeSelectId, startInputId, endInputId) {
+      const selectedType = classTypesData.find(item => Number(item.id) === Number(document.getElementById(typeSelectId).value));
+      const startValue = document.getElementById(startInputId).value;
+      if (!selectedType || !startValue) return;
+      document.getElementById(endInputId).value = plusMinutesToHHMM(startValue, Number(selectedType.durationMinutes || 0));
+    }
+
+    function initTimeHelpers() {
+      ["single-start", "recurring-start-time"].forEach(id => {
+        const input = document.getElementById(id);
+        if (input) input.placeholder = "HH:MM";
+      });
+      document.getElementById("single-start")?.addEventListener("change", () => syncEndTime("single-class-type", "single-start", "single-end"));
+      document.getElementById("single-class-type")?.addEventListener("change", () => syncEndTime("single-class-type", "single-start", "single-end"));
+      document.getElementById("recurring-start-time")?.addEventListener("change", () => syncEndTime("recurring-class-type", "recurring-start-time", "recurring-end-time"));
+      document.getElementById("recurring-class-type")?.addEventListener("change", () => syncEndTime("recurring-class-type", "recurring-start-time", "recurring-end-time"));
+    }
+
     function initTabs() {
       const buttons = document.querySelectorAll(".tab-btn");
       const sections = document.querySelectorAll(".tab-section");
@@ -524,10 +600,11 @@
           if (!response.ok) {
             const text = await response.text();
             console.error("Error creando salón:", response.status, text);
+            const errorMessage = await extractErrorMessage(response, "No se pudo crear el salón");
             await Swal.fire({
               icon: "error",
               title: "No se pudo crear",
-              text: "No se pudo crear el salón",
+              text: errorMessage,
               confirmButtonColor: "#dc2626"
             });
             return;
@@ -581,10 +658,11 @@
           if (!response.ok) {
             const text = await response.text();
             console.error("Error creando tipo de clase:", response.status, text);
+            const errorMessage = await extractErrorMessage(response, "No se pudo crear el tipo de clase");
             await Swal.fire({
               icon: "error",
               title: "No se pudo crear",
-              text: "No se pudo crear el tipo de clase",
+              text: errorMessage,
               confirmButtonColor: "#dc2626"
             });
             return;
@@ -655,10 +733,11 @@
           if (!response.ok) {
             const text = await response.text();
             console.error("Error creando clase única:", response.status, text);
+            const errorMessage = await extractErrorMessage(response, "No se pudo crear la clase única");
             await Swal.fire({
               icon: "error",
               title: "No se pudo crear",
-              text: "No se pudo crear la clase única",
+              text: errorMessage,
               confirmButtonColor: "#dc2626"
             });
             return;
@@ -726,10 +805,11 @@
           if (!response.ok) {
             const text = await response.text();
             console.error("Error generando clases recurrentes:", response.status, text);
+            const errorMessage = await extractErrorMessage(response, "No se pudieron generar las clases recurrentes");
             await Swal.fire({
               icon: "error",
               title: "No se pudieron generar",
-              text: "No se pudieron generar las clases recurrentes",
+              text: errorMessage,
               confirmButtonColor: "#dc2626"
             });
             return;
@@ -886,6 +966,7 @@
     function initLogout() {
       const btnLogout = document.getElementById("btn-logout");
       if (!btnLogout) return;
+      normalizeLogoutButton();
 
       btnLogout.addEventListener("click", async () => {
         const result = await Swal.fire({
