@@ -2,6 +2,7 @@ package com.kbseed.service;
 
 import com.kbseed.dto.AuthRequest;
 import com.kbseed.dto.AuthResponse;
+import com.kbseed.dto.MeResponse;
 import com.kbseed.entity.UserEntity;
 import com.kbseed.repository.UserRepository;
 import jakarta.servlet.http.HttpSession;
@@ -27,7 +28,7 @@ public class AuthService {
                         new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Usuario o contraseña incorrectos")
                 );
 
-        // Comparación simple (temporal)
+        // Comparación simple temporal
         if (!user.getPasswordHash().equals(request.getPassword())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Usuario o contraseña incorrectos");
         }
@@ -46,6 +47,28 @@ public class AuthService {
         response.setStudioId(user.getStudioId());
         response.setUsername(user.getEmail());
         response.setFullName(user.getFullName());
+
+        return response;
+    }
+
+    public MeResponse me() {
+        Long userId = (Long) session.getAttribute("USER_ID");
+
+        if (userId == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "No autenticado");
+        }
+
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() ->
+                        new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado")
+                );
+
+        MeResponse response = new MeResponse();
+        response.setId(user.getId());
+        response.setStudioId(user.getStudioId());
+        response.setUsername(user.getEmail());
+        response.setFullName(user.getFullName());
+        response.setRole(user.getRoleId().toString());
 
         return response;
     }
