@@ -123,6 +123,10 @@
     .sidebar-item-active {
       background-color: var(--primary);
     }
+
+    .rotate-180 {
+      transform: rotate(180deg);
+    }
   </style>
 </head>
 
@@ -265,6 +269,7 @@
           <table class="w-full text-left">
             <thead>
               <tr class="bg-background-light/50">
+                <th class="px-4 py-4 w-14"></th>
                 <th class="px-6 py-4 text-text-main/60 text-xs font-bold uppercase tracking-wider">Horario</th>
                 <th class="px-6 py-4 text-text-main/60 text-xs font-bold uppercase tracking-wider">Tipo de Clase</th>
                 <th class="px-6 py-4 text-text-main/60 text-xs font-bold uppercase tracking-wider">Instructor</th>
@@ -276,7 +281,6 @@
             <tbody id="tabla-body"></tbody>
           </table>
         </div>
-
       </section>
 
       <footer class="mt-12 text-center text-text-main/40 text-xs">
@@ -344,12 +348,16 @@
     let filteredClientsForEnrollment = [];
     let enrolledClientIds = [];
 
+    let expandedClassId = null;
+    let reservationsByClass = {};
+
     async function initPage() {
       const fechaInput = document.getElementById("fecha-seleccionada");
       if (fechaInput) {
         fechaInput.value = selectedDate;
         fechaInput.addEventListener("change", async (e) => {
           selectedDate = e.target.value;
+          expandedClassId = null;
           await loadClasses();
         });
       }
@@ -414,6 +422,106 @@
       }
     }
 
+    async function loadClassReservations(classId) {
+      try {
+        const response = await fetch(`/api/classes/${classId}/reservations`, {
+          credentials: "include"
+        });
+
+        if (!response.ok) {
+          const text = await response.text();
+          console.warn("No se pudieron cargar las reservas de la clase:", response.status, text);
+          reservationsByClass[classId] = [];
+          return [];
+        }
+
+        const reservations = await response.json();
+        reservationsByClass[classId] = Array.isArray(reservations) ? reservations : [];
+        return reservationsByClass[classId];
+      } catch (error) {
+        console.warn("Error cargando reservas de la clase:", error);
+        reservationsByClass[classId] = [];
+        return [];
+      }
+    }
+
+    async function toggleClassReservations(classId) {
+      if (expandedClassId === classId) {
+        expandedClassId = null;
+        renderClasses(classData);
+        return;
+      }
+
+      expandedClassId = classId;
+
+      if (!reservationsByClass[classId]) {
+        await loadClassReservations(classId);
+      }
+
+      renderClasses(classData);
+    }
+
+    function renderReservationsDetail(reservations) {
+      if (!reservations || reservations.length === 0) {
+        return `
+          <div class="px-6 py-5">
+            <div class="rounded-xl border border-dashed border-accent-border bg-background-light/40 p-4 text-sm text-text-main/60">
+              Esta clase todavía no tiene alumnos inscritos
+            </div>
+          </div>
+        `;
+      }
+
+      const rows = reservations.map(reservation => {
+        const client =
+          reservation.client ||
+          reservation.clients ||
+          reservation.clientData ||
+          null;
+
+        const fullName = client
+          ? `${client.firstName || ""} ${client.lastName || ""}`.trim()
+          : `Alumno ID: ${reservation.clientId || reservation.idClient || "-"}`;
+
+        const email = client?.email || "Sin email";
+        const phone = client?.phone || "Sin teléfono";
+
+        const initials = client
+          ? getInitials(client.firstName, client.lastName)
+          : "AL";
+
+        return `
+          <div class="flex items-center justify-between gap-4 rounded-xl border border-accent-border/70 bg-white px-4 py-3">
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="h-10 w-10 rounded-full bg-primary/15 text-primary flex items-center justify-center font-bold text-sm shrink-0">
+                ${initials}
+              </div>
+              <div class="min-w-0">
+                <p class="font-semibold text-text-main truncate">${fullName || "Sin nombre"}</p>
+                <p class="text-xs text-text-main/50 truncate">${email} • ${phone}</p>
+              </div>
+            </div>
+
+            <div class="text-xs font-medium text-text-main/50 shrink-0">
+              ${reservation.status || "INSCRITO"}
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      return `
+        <div class="px-6 py-5 bg-background-light/30">
+          <div class="mb-3 flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary text-lg">groups</span>
+            <p class="text-sm font-bold text-text-main">Alumnos inscritos</p>
+          </div>
+          <div class="space-y-3">
+            ${rows}
+          </div>
+        </div>
+      `;
+    }
+
     function renderClasses(classes) {
       const tbody = document.getElementById("tabla-body");
       if (!tbody) return;
@@ -422,12 +530,12 @@
 
       if (!classes || classes.length === 0) {
         tbody.innerHTML = `
-        <tr>
-          <td colspan="6" class="px-6 py-8 text-center text-text-main/50 font-medium">
-            No hay clases registradas para esta fecha
-          </td>
-        </tr>
-      `;
+          <tr>
+            <td colspan="7" class="px-6 py-8 text-center text-text-main/50 font-medium">
+              No hay clases registradas para esta fecha
+            </td>
+          </tr>
+        `;
         return;
       }
 
@@ -441,83 +549,119 @@
         if (clase.status === "CANCELADA") colorBarra = "bg-yellow-500";
         if (clase.status === "DISPONIBLE") colorBarra = "bg-green-500";
 
+        const isExpanded = expandedClassId === clase.id;
+        const reservations = reservationsByClass[clase.id] || [];
+
         const fila = `
-        <tr class="hover:bg-primary/5 transition-colors">
-          <td class="px-6 py-5">
-            <span class="text-text-main font-bold">
-              ${formatTime(clase.startTime)} - ${formatTime(clase.endTime)}
-            </span>
-          </td>
+          <tr class="hover:bg-primary/5 transition-colors">
+            <td class="px-4 py-5 text-center">
+              <button
+                class="inline-flex items-center justify-center size-9 rounded-lg border border-accent-border bg-white hover:bg-accent/10 transition-all js-expand-trigger"
+                data-class-id="${clase.id}"
+                type="button"
+                title="Ver alumnos inscritos">
+                <span class="material-symbols-outlined transition-transform ${isExpanded ? "rotate-180" : ""}">
+                  expand_more
+                </span>
+              </button>
+            </td>
 
-          <td class="px-6 py-5">
-            <div class="flex items-center gap-2">
-              <span class="size-2 rounded-full bg-[#D6E7C2]"></span>
-              <span class="text-text-main font-semibold">${clase.classTypeName}</span>
-            </div>
-          </td>
-
-          <td class="px-6 py-5 text-text-main/80 font-medium">
-            ${clase.coachUserName || "Sin instructor"}
-          </td>
-
-          <td class="px-6 py-5 text-text-main/80 font-medium">
-            ${clase.roomName || "Sin sala"}
-          </td>
-
-          <td class="px-6 py-5">
-            <div class="flex items-center gap-2">
-              <div class="w-20 bg-background-light rounded-full h-1.5 overflow-hidden">
-                <div class="${colorBarra} h-full" style="width:${progreso}%"></div>
-              </div>
-
-              <span class="text-sm font-bold text-text-main">
-                ${clase.capacity}/${clase.capacityTotal}
+            <td class="px-6 py-5">
+              <span class="text-text-main font-bold">
+                ${formatTime(clase.startTime)} - ${formatTime(clase.endTime)}
               </span>
-            </div>
-          </td>
+            </td>
 
-          <td class="px-6 py-5 text-right">
-            <button
-              class="text-text-main/40 hover:text-text-main transition-colors js-menu-trigger"
-              data-class-id="${clase.id}"
-              aria-expanded="false"
-              type="button">
-              <span class="material-symbols-outlined">more_vert</span>
-            </button>
+            <td class="px-6 py-5">
+              <div class="flex items-center gap-2">
+                <span class="size-2 rounded-full bg-[#D6E7C2]"></span>
+                <span class="text-text-main font-semibold">${clase.classTypeName}</span>
+              </div>
+            </td>
 
-            <div
-              class="js-menu hidden fixed w-48 rounded-lg border border-accent-border bg-white shadow-lg z-[9999]"
-              data-class-id="${clase.id}">
+            <td class="px-6 py-5 text-text-main/80 font-medium">
+              ${clase.coachUserName || "Sin instructor"}
+            </td>
+
+            <td class="px-6 py-5 text-text-main/80 font-medium">
+              ${clase.roomName || "Sin sala"}
+            </td>
+
+            <td class="px-6 py-5">
+              <div class="flex items-center gap-2">
+                <div class="w-20 bg-background-light rounded-full h-1.5 overflow-hidden">
+                  <div class="${colorBarra} h-full" style="width:${progreso}%"></div>
+                </div>
+
+                <span class="text-sm font-bold text-text-main">
+                  ${clase.capacity}/${clase.capacityTotal}
+                </span>
+              </div>
+            </td>
+
+            <td class="px-6 py-5 text-right">
               <button
-                class="js-action-btn w-full text-left px-4 py-3 text-sm hover:bg-slate-50"
-                data-action="ver-detalle"
+                class="text-text-main/40 hover:text-text-main transition-colors js-menu-trigger"
                 data-class-id="${clase.id}"
+                aria-expanded="false"
                 type="button">
-                Ver detalle
+                <span class="material-symbols-outlined">more_vert</span>
               </button>
-              <button
-                class="js-action-btn w-full text-left px-4 py-3 text-sm hover:bg-slate-50"
-                data-action="inscribir-alumno"
-                data-class-id="${clase.id}"
-                type="button">
-                Inscribir alumno
-              </button>
-              <button
-                class="js-action-btn w-full text-left px-4 py-3 text-sm hover:bg-slate-50"
-                data-action="eliminar-clase"
-                data-class-id="${clase.id}"
-                type="button">
-                Eliminar clase
-              </button>
-            </div>
-          </td>
-        </tr>
-      `;
+
+              <div
+                class="js-menu hidden fixed w-48 rounded-lg border border-accent-border bg-white shadow-lg z-[9999]"
+                data-class-id="${clase.id}">
+                <button
+                  class="js-action-btn w-full text-left px-4 py-3 text-sm hover:bg-slate-50"
+                  data-action="ver-detalle"
+                  data-class-id="${clase.id}"
+                  type="button">
+                  Ver detalle
+                </button>
+                <button
+                  class="js-action-btn w-full text-left px-4 py-3 text-sm hover:bg-slate-50"
+                  data-action="inscribir-alumno"
+                  data-class-id="${clase.id}"
+                  type="button">
+                  Inscribir alumno
+                </button>
+                <button
+                  class="js-action-btn w-full text-left px-4 py-3 text-sm hover:bg-slate-50"
+                  data-action="eliminar-clase"
+                  data-class-id="${clase.id}"
+                  type="button">
+                  Eliminar clase
+                </button>
+              </div>
+            </td>
+          </tr>
+
+          ${isExpanded ? `
+            <tr class="bg-background-light/20">
+              <td colspan="7" class="p-0">
+                ${renderReservationsDetail(reservations)}
+              </td>
+            </tr>
+          ` : ""}
+        `;
 
         tbody.innerHTML += fila;
       });
 
       initMenuActions();
+      initExpandActions();
+    }
+
+    function initExpandActions() {
+      const expandButtons = document.querySelectorAll(".js-expand-trigger");
+
+      expandButtons.forEach(button => {
+        button.onclick = async (event) => {
+          event.stopPropagation();
+          const classId = Number(button.dataset.classId);
+          await toggleClassReservations(classId);
+        };
+      });
     }
 
     function formatTime(time) {
@@ -652,6 +796,8 @@
                 confirmButtonColor: "#16a34a"
               });
 
+              expandedClassId = null;
+              delete reservationsByClass[classId];
               await loadClasses();
             } catch (error) {
               console.error("Error eliminando clase:", error);
@@ -709,16 +855,11 @@
         .map(item => {
           if (!item) return null;
 
-          // Formas comunes posibles del backend
           if (item.clientId != null) return Number(item.clientId);
           if (item.idClient != null) return Number(item.idClient);
           if (item.client_id != null) return Number(item.client_id);
-
-          // Si viene anidado
           if (item.client && item.client.id != null) return Number(item.client.id);
           if (item.clients && item.clients.id != null) return Number(item.clients.id);
-
-          // Si el backend regresa el alumno completo como reservation.client
           if (item.client && item.client.clientId != null) return Number(item.client.clientId);
 
           return null;
@@ -738,9 +879,9 @@
       const selectedClass = classData.find(clase => Number(clase.id) === Number(classId));
       if (selectedClass && textoClase) {
         textoClase.innerHTML = `
-      <span class="material-symbols-outlined text-sm">event</span>
-      ${selectedClass.classTypeName} - ${formatTime(selectedClass.startTime)}
-    `;
+          <span class="material-symbols-outlined text-sm">event</span>
+          ${selectedClass.classTypeName} - ${formatTime(selectedClass.startTime)}
+        `;
       }
 
       try {
@@ -820,10 +961,10 @@
 
       if (!clients || clients.length === 0) {
         container.innerHTML = `
-      <div class="p-4 text-sm text-text-main/60 text-center border border-accent-border rounded-lg">
-        No hay alumnos disponibles para inscribir en esta clase
-      </div>
-    `;
+          <div class="p-4 text-sm text-text-main/60 text-center border border-accent-border rounded-lg">
+            No hay alumnos disponibles para inscribir en esta clase
+          </div>
+        `;
         return;
       }
 
@@ -836,23 +977,23 @@
         row.className = "flex items-center justify-between gap-3 p-3 rounded-lg hover:bg-primary/5 transition-all border border-transparent hover:border-primary/10 group";
 
         row.innerHTML = `
-      <div class="flex items-center gap-3 min-w-0">
-        <div class="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold overflow-hidden text-sm shrink-0">
-          ${initials}
-        </div>
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold overflow-hidden text-sm shrink-0">
+              ${initials}
+            </div>
 
-        <div class="min-w-0">
-          <p class="font-semibold text-text-main truncate">${fullName}</p>
-          <p class="text-xs text-text-main/50 truncate">${subtitle}</p>
-        </div>
-      </div>
+            <div class="min-w-0">
+              <p class="font-semibold text-text-main truncate">${fullName}</p>
+              <p class="text-xs text-text-main/50 truncate">${subtitle}</p>
+            </div>
+          </div>
 
-      <button
-        class="bg-primary hover:bg-primary/90 text-white px-4 py-1.5 rounded-lg text-sm font-semibold transition-transform active:scale-95 shadow-sm shrink-0"
-        type="button">
-        Inscribir
-      </button>
-    `;
+          <button
+            class="bg-primary hover:bg-primary/90 text-white px-4 py-1.5 rounded-lg text-sm font-semibold transition-transform active:scale-95 shadow-sm shrink-0"
+            type="button">
+            Inscribir
+          </button>
+        `;
 
         const button = row.querySelector("button");
         button.addEventListener("click", async () => {
@@ -894,7 +1035,7 @@
           await Swal.fire({
             icon: "error",
             title: "No se pudo inscribir",
-            text: "No se pudo inscribir el alumno",
+            text: text || "No se pudo inscribir el alumno",
             confirmButtonColor: "#dc2626"
           });
           return;
@@ -910,6 +1051,7 @@
         });
 
         closeEnrollmentModal();
+        delete reservationsByClass[currentClassIdToEnroll];
         await loadClasses();
       } catch (error) {
         console.error("Error inscribiendo alumno:", error);
