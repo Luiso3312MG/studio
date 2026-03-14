@@ -20,11 +20,18 @@ public class AuthService {
     }
 
     public AuthResponse login(AuthRequest request) {
+        System.out.println(">>> Intentando login con username: " + request.getUsername());
+
         UserEntity user = userRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new RuntimeException("Usuario o contraseña incorrectos"));
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado en BD"));
+
+        System.out.println(">>> Usuario encontrado: " + user.getUsername());
+        System.out.println(">>> StudioId: " + user.getStudioId());
+        System.out.println(">>> Role: " + user.getRole());
+        System.out.println(">>> Status: " + user.getStatus());
 
         if (!user.getPassword().equals(request.getPassword())) {
-            throw new RuntimeException("Usuario o contraseña incorrectos");
+            throw new RuntimeException("Contraseña incorrecta");
         }
 
         if (user.getStatus() != null && !user.getStatus().equalsIgnoreCase("ACTIVO")) {
