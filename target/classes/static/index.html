@@ -351,6 +351,9 @@
     let expandedClassId = null;
     let reservationsByClass = {};
 
+    let studioClients = [];
+    let clientsById = {};
+
     async function initPage() {
       const fechaInput = document.getElementById("fecha-seleccionada");
       if (fechaInput) {
@@ -381,10 +384,44 @@
         }
 
         const clients = await response.json();
-        const filtered = clients.filter(client => Number(client.studioId) === Number(studioId));
-        document.getElementById("valor-total-alumnos").textContent = filtered.length;
+
+        studioClients = clients.filter(client => Number(client.studioId) === Number(studioId));
+        clientsById = {};
+
+        studioClients.forEach(client => {
+          clientsById[Number(client.id)] = client;
+        });
+
+        document.getElementById("valor-total-alumnos").textContent = studioClients.length;
       } catch (error) {
         console.error("Error cargando total de alumnos:", error);
+      }
+    }
+
+    async function ensureStudioClientsLoaded() {
+      if (studioClients.length > 0) return;
+
+      try {
+        const response = await fetch("/api/clients", {
+          credentials: "include"
+        });
+
+        if (!response.ok) {
+          const text = await response.text();
+          console.error("Error cargando alumnos del studio:", response.status, text);
+          return;
+        }
+
+        const clients = await response.json();
+
+        studioClients = clients.filter(client => Number(client.studioId) === Number(studioId));
+        clientsById = {};
+
+        studioClients.forEach(client => {
+          clientsById[Number(client.id)] = client;
+        });
+      } catch (error) {
+        console.error("Error cargando alumnos del studio:", error);
       }
     }
 
@@ -422,7 +459,70 @@
       }
     }
 
+    function extractClientIdsFromReservations(reservations) {
+      if (!Array.isArray(reservations)) return [];
+
+      const ids = [];
+
+      function deepFindClientId(obj) {
+        if (!obj || typeof obj !== "object") return null;
+
+        const directKeys = [
+          "clientId",
+          "idClient",
+          "client_id",
+          "studentId",
+          "idStudent",
+          "student_id",
+          "userId",
+          "idUser",
+          "user_id"
+        ];
+
+        for (const key of directKeys) {
+          if (obj[key] != null && Number.isFinite(Number(obj[key]))) {
+            return Number(obj[key]);
+          }
+        }
+
+        const nestedKeys = ["client", "student", "user", "clients"];
+        for (const key of nestedKeys) {
+          if (obj[key] && typeof obj[key] === "object") {
+            const nested = obj[key];
+
+            if (nested.id != null && Number.isFinite(Number(nested.id))) {
+              return Number(nested.id);
+            }
+
+            for (const directKey of directKeys) {
+              if (nested[directKey] != null && Number.isFinite(Number(nested[directKey]))) {
+                return Number(nested[directKey]);
+              }
+            }
+          }
+        }
+
+        for (const value of Object.values(obj)) {
+          if (value && typeof value === "object") {
+            const found = deepFindClientId(value);
+            if (found != null) return found;
+          }
+        }
+
+        return null;
+      }
+
+      reservations.forEach(item => {
+        const id = deepFindClientId(item);
+        if (id != null) ids.push(id);
+      });
+
+      return [...new Set(ids)];
+    }
+
     async function loadClassReservations(classId) {
+      await ensureStudioClientsLoaded();
+
       try {
         const response = await fetch(`/api/classes/${classId}/reservations`, {
           credentials: "include"
@@ -435,9 +535,22 @@
           return [];
         }
 
-        const reservations = await response.json();
-        reservationsByClass[classId] = Array.isArray(reservations) ? reservations : [];
-        return reservationsByClass[classId];
+        const rawReservations = await response.json();
+        const reservationsArray = Array.isArray(rawReservations) ? rawReservations : [];
+
+        const normalized = reservationsArray.map(reservation => {
+          const clientId = extractClientIdsFromReservations([reservation])[0] ?? null;
+          const client = clientId != null ? clientsById[Number(clientId)] || null : null;
+
+          return {
+            ...reservation,
+            normalizedClientId: clientId,
+            normalizedClient: client
+          };
+        });
+
+        reservationsByClass[classId] = normalized;
+        return normalized;
       } catch (error) {
         console.warn("Error cargando reservas de la clase:", error);
         reservationsByClass[classId] = [];
@@ -474,6 +587,7 @@
 
       const rows = reservations.map(reservation => {
         const client =
+          reservation.normalizedClient ||
           reservation.client ||
           reservation.clients ||
           reservation.clientData ||
@@ -481,7 +595,7 @@
 
         const fullName = client
           ? `${client.firstName || ""} ${client.lastName || ""}`.trim()
-          : `Alumno ID: ${reservation.clientId || reservation.idClient || "-"}`;
+          : `Alumno ID: ${reservation.normalizedClientId || reservation.clientId || reservation.idClient || "-"}`;
 
         const email = client?.email || "Sin email";
         const phone = client?.phone || "Sin teléfono";
@@ -848,25 +962,6 @@
       });
     }
 
-    function extractClientIdsFromReservations(reservations) {
-      if (!Array.isArray(reservations)) return [];
-
-      return reservations
-        .map(item => {
-          if (!item) return null;
-
-          if (item.clientId != null) return Number(item.clientId);
-          if (item.idClient != null) return Number(item.idClient);
-          if (item.client_id != null) return Number(item.client_id);
-          if (item.client && item.client.id != null) return Number(item.client.id);
-          if (item.clients && item.clients.id != null) return Number(item.clients.id);
-          if (item.client && item.client.clientId != null) return Number(item.client.clientId);
-
-          return null;
-        })
-        .filter(id => Number.isFinite(id));
-    }
-
     async function openEnrollmentModal(classId) {
       currentClassIdToEnroll = classId;
 
@@ -885,47 +980,14 @@
       }
 
       try {
-        const clientsResponse = await fetch("/api/clients", {
-          credentials: "include"
-        });
+        await ensureStudioClientsLoaded();
 
-        if (!clientsResponse.ok) {
-          const text = await clientsResponse.text();
-          console.error("Error cargando alumnos para inscripción:", clientsResponse.status, text);
+        const reservations = await loadClassReservations(classId);
+        enrolledClientIds = reservations
+          .map(item => item.normalizedClientId)
+          .filter(id => Number.isFinite(Number(id)));
 
-          await Swal.fire({
-            icon: "error",
-            title: "No se pudieron cargar",
-            text: "No se pudieron cargar los alumnos",
-            confirmButtonColor: "#dc2626"
-          });
-          return;
-        }
-
-        const clients = await clientsResponse.json();
-        enrolledClientIds = [];
-
-        try {
-          const reservationsResponse = await fetch(`/api/classes/${classId}/reservations`, {
-            credentials: "include"
-          });
-
-          if (reservationsResponse.ok) {
-            const reservations = await reservationsResponse.json();
-            console.log("Reservations raw:", reservations);
-
-            enrolledClientIds = extractClientIdsFromReservations(reservations);
-            console.log("enrolledClientIds:", enrolledClientIds);
-          } else {
-            const text = await reservationsResponse.text();
-            console.warn("No se pudieron cargar inscritos, se asumirá clase sin inscritos:", reservationsResponse.status, text);
-          }
-        } catch (reservationError) {
-          console.warn("No se pudieron cargar inscritos, se asumirá clase sin inscritos:", reservationError);
-        }
-
-        allClientsForEnrollment = clients
-          .filter(client => Number(client.studioId) === Number(studioId))
+        allClientsForEnrollment = studioClients
           .filter(client => client.status === "ACTIVE");
 
         filteredClientsForEnrollment = allClientsForEnrollment.filter(client =>
@@ -951,6 +1013,8 @@
       modal?.classList.add("hidden");
       currentClassIdToEnroll = null;
       enrolledClientIds = [];
+      allClientsForEnrollment = [];
+      filteredClientsForEnrollment = [];
     }
 
     function renderEnrollmentClients(clients) {
@@ -1015,6 +1079,16 @@
         return;
       }
 
+      if (enrolledClientIds.includes(Number(clientId))) {
+        await Swal.fire({
+          icon: "info",
+          title: "Alumno ya inscrito",
+          text: "Este alumno ya se encuentra inscrito en la clase",
+          confirmButtonColor: "#0A1128"
+        });
+        return;
+      }
+
       try {
         const response = await fetch(`/api/classes/${currentClassIdToEnroll}/reservations`, {
           method: "POST",
@@ -1032,10 +1106,19 @@
           const text = await response.text();
           console.error("Error inscribiendo alumno:", response.status, text);
 
+          let errorMessage = "No se pudo inscribir el alumno";
+
+          try {
+            const parsed = JSON.parse(text);
+            if (parsed?.message) errorMessage = parsed.message;
+          } catch {
+            if (text) errorMessage = text;
+          }
+
           await Swal.fire({
             icon: "error",
             title: "No se pudo inscribir",
-            text: text || "No se pudo inscribir el alumno",
+            text: errorMessage,
             confirmButtonColor: "#dc2626"
           });
           return;
@@ -1050,8 +1133,12 @@
           confirmButtonColor: "#16a34a"
         });
 
+        const classIdToRefresh = currentClassIdToEnroll;
         closeEnrollmentModal();
-        delete reservationsByClass[currentClassIdToEnroll];
+        delete reservationsByClass[classIdToRefresh];
+        if (expandedClassId === classIdToRefresh) {
+          await loadClassReservations(classIdToRefresh);
+        }
         await loadClasses();
       } catch (error) {
         console.error("Error inscribiendo alumno:", error);
