@@ -22,6 +22,7 @@ public class AuthController {
 
     @PostMapping("/login")
     public AuthResponse login(@RequestBody AuthRequest request) {
+        System.out.println(">>> ENTRÓ AL LOGIN: " + request.getUsername());
         return authService.login(request);
     }
 
@@ -34,4 +35,11 @@ public class AuthController {
     public void logout() {
         authService.logout();
     }
+
+    @GetMapping("/ping")
+    public String ping() {
+        System.out.println(">>> ENTRÓ A PING");
+        return "pong";
+    }
+
 }
