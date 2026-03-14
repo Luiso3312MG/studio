@@ -181,13 +181,7 @@
         <p class="text-text-main/60 text-lg font-normal">Resumen operativo del día</p>
       </div>
 
-      <div class="flex gap-3">
-        <button type="button"
-                class="flex items-center gap-2 bg-white border border-accent-border px-4 py-2 rounded-lg text-sm font-semibold hover:bg-slate-50 transition-all">
-          <span class="material-symbols-outlined text-sm">download</span>
-          Exportar
-        </button>
-      </div>
+
     </header>
 
     <section class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
@@ -781,6 +775,38 @@
       window.location.href = "/login.html";
     });
   }
+
+  function initLogout() {
+
+  const btnLogout = document.getElementById("btn-logout");
+
+  if (!btnLogout) return;
+
+  btnLogout.addEventListener("click", async () => {
+
+    const confirmar = confirm("¿Deseas cerrar sesión?");
+
+    if (!confirmar) return;
+
+    try {
+
+      const response = await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "include"
+      });
+
+      console.log("Logout status:", response.status);
+
+    } catch (error) {
+      console.error("Error cerrando sesión:", error);
+    }
+
+    window.location.href = "/login.html";
+
+  });
+}
+
+
 </script>
 </body>
 
