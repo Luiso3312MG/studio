@@ -1,221 +1,226 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>K&B Dev</title>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>K&B Studio - Ingresar</title>
 
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 
-    <link
-        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Montserrat:wght@300;400;500&display=swap"
-        rel="stylesheet" />
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet"/>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 
     <script>
         tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'kb-navy': '#0A1128',
-                        'kb-gold': '#D4AF37',
-                        'kb-gold-light': '#F1D592',
-                        'kb-dark-blue': '#001F3F',
-                    },
-                    fontFamily: {
-                        'serif-display': ['Cinzel', 'serif'],
-                        'sans-ui': ['Montserrat', 'sans-serif'],
-                    }
-                }
+          theme: {
+            extend: {
+              colors: {
+                'kb-navy': '#0A1128',
+                'kb-gold': '#D4AF37',
+                'kb-gold-light': '#F1D592',
+                'kb-dark-blue': '#001F3F',
+              },
+              fontFamily: {
+                'serif-display': ['Cinzel', 'serif'],
+                'sans-ui': ['Montserrat', 'sans-serif'],
+              }
             }
-        }
+          }
+        };
     </script>
 
     <style>
         .bg-texture {
-            background-image: radial-gradient(circle at 50% 50%, #1a2a44 0%, #0a1128 100%);
-            position: relative;
-            overflow: hidden;
+          background-image: radial-gradient(circle at 50% 50%, #1a2a44 0%, #0a1128 100%);
+          position: relative;
+          overflow: hidden;
         }
 
         .bg-texture::after {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            opacity: 0.03;
-            pointer-events: none;
-            background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuBntmhkLs_X3n1-67ChPcwHPyn9eVJmGb35-FNacGgYv93KPiNvXtPI6VJSW3dtofA0Kt71v7e0gMhB3DIrthObaLuFEmbvVCUoHZDonAbQrCQTbbt9Pt0_g91AErN1by8FOUDoa7vng0Wp2UN2_dzzEqUD3Cl3otR_kqlU27uFq1zUL9SS3fTcweSjvlKN6GIqOB54Ttz9-8xVw-uPoIkb8TEW9UQlRFf0DouBbZrIylDlEWZWAdt9kvMx1yt_4f5epSf8xtJ9NzjL);
+          content: "";
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          opacity: 0.03;
+          pointer-events: none;
+          background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuBntmhkLs_X3n1-67ChPcwHPyn9eVJmGb35-FNacGgYv93KPiNvXtPI6VJSW3dtofA0Kt71v7e0gMhB3DIrthObaLuFEmbvVCUoHZDonAbQrCQTbbt9Pt0_g91AErN1by8FOUDoa7vng0Wp2UN2_dzzEqUD3Cl3otR_kqlU27uFq1zUL9SS3fTcweSjvlKN6GIqOB54Ttz9-8xVw-uPoIkb8TEW9UQlRFf0DouBbZrIylDlEWZWAdt9kvMx1yt_4f5epSf8xtJ9NzjL);
         }
 
         .luxury-input:focus {
-            border-color: #D4AF37;
-            box-shadow: 0 0 0 1px #D4AF37;
+          border-color: #D4AF37;
+          box-shadow: 0 0 0 1px #D4AF37;
         }
     </style>
-
 </head>
 
 <body class="font-sans-ui text-kb-navy antialiased">
+<main class="min-h-screen w-full flex items-center justify-center bg-texture px-4">
+    <section class="w-full max-w-md bg-white/95 backdrop-blur-sm p-10 rounded-sm shadow-2xl flex flex-col items-center">
 
-    <main class="min-h-screen w-full flex items-center justify-center bg-texture px-4">
+        <header class="flex flex-col items-center mb-10">
+            <div class="mb-2">
+                <svg fill="none" height="60" viewBox="0 0 24 24" width="60" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M5 16L3 5L8.5 10L12 4L15.5 10L21 5L19 16H5Z" fill="#D4AF37" stroke="#D4AF37" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"></path>
+                    <path d="M5 18H19V20H5V18Z" fill="#D4AF37"></path>
+                </svg>
+            </div>
 
-        <section
-            class="w-full max-w-md bg-white/95 backdrop-blur-sm p-10 rounded-sm shadow-2xl flex flex-col items-center">
+            <h1 class="font-serif-display text-4xl tracking-widest text-kb-navy font-bold">K&B</h1>
+            <p class="uppercase text-[10px] tracking-[0.3em] text-kb-gold mt-1 font-medium">Developers</p>
+        </header>
 
-            <header class="flex flex-col items-center mb-10">
+        <form id="loginForm" class="w-full space-y-6">
+            <div class="space-y-1">
+                <label class="block text-[11px] uppercase tracking-wider text-gray-500 font-semibold ml-1" for="username">
+                    Correo Electrónico
+                </label>
+                <input
+                        class="luxury-input w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-none text-sm transition-all duration-300 focus:outline-none"
+                        id="username"
+                        name="username"
+                        placeholder="ejemplo@gmail.com"
+                        required
+                        type="email"
+                />
+            </div>
 
-                <div class="mb-2">
-                    <svg fill="none" height="60" viewBox="0 0 24 24" width="60">
-                        <path d="M5 16L3 5L8.5 10L12 4L15.5 10L21 5L19 16H5Z" fill="#D4AF37" stroke="#D4AF37" />
-                        <path d="M5 18H19V20H5V18Z" fill="#D4AF37" />
-                    </svg>
-                </div>
+            <div class="space-y-1 relative">
+                <label class="block text-[11px] uppercase tracking-wider text-gray-500 font-semibold ml-1" for="password">
+                    Contraseña
+                </label>
 
-                <h1 class="font-serif-display text-4xl tracking-widest text-kb-navy font-bold">K&B</h1>
-                <p class="uppercase text-[10px] tracking-[0.3em] text-kb-gold mt-1 font-medium">Developers</p>
+                <input
+                        class="luxury-input w-full px-4 py-3 pr-12 bg-gray-50 border border-gray-200 rounded-none text-sm transition-all duration-300 focus:outline-none"
+                        id="password"
+                        name="password"
+                        placeholder="••••••••"
+                        required
+                        type="password"
+                />
 
-            </header>
+                <button
+                        id="togglePassword"
+                        type="button"
+                        class="absolute right-4 top-10 text-gray-500 hover:text-kb-gold transition-colors"
+                        aria-label="Mostrar u ocultar contraseña"
+                >
+                    <i class="fas fa-eye"></i>
+                </button>
+            </div>
 
-            <form id="loginForm" class="w-full space-y-6">
+            <div id="errorBox" class="hidden text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2 text-center"></div>
 
-                <div class="space-y-1">
-                    <label class="block text-[11px] uppercase tracking-wider text-gray-500 font-semibold ml-1">
-                        Correo Electrónico
-                    </label>
+            <div class="pt-4">
+                <button
+                        id="submitButton"
+                        class="w-full py-4 bg-kb-gold hover:bg-kb-gold-light text-kb-navy font-bold uppercase tracking-[0.2em] text-xs transition-all duration-300 shadow-md active:scale-[0.98]"
+                        type="submit"
+                >
+                    Ingresar
+                </button>
+            </div>
+        </form>
 
-                    <input class="luxury-input w-full px-4 py-3 bg-gray-50 border border-gray-200 text-sm" id="username"
-                        type="text" placeholder="usuario" required>
-                </div>
+        <footer class="mt-12 text-center">
+            <p class="text-[10px] text-gray-400 uppercase tracking-widest">
+                © <span id="current-year"></span> K&B Studio. Todos los derechos reservados.
+            </p>
+        </footer>
+    </section>
+</main>
 
-                <div class="space-y-1 relative">
+<script>
+    document.getElementById("current-year").textContent = new Date().getFullYear();
 
-                    <label class="block text-[11px] uppercase tracking-wider text-gray-500 font-semibold ml-1">
-                        Contraseña
-                    </label>
+    const toggle = document.getElementById("togglePassword");
+    const passwordInput = document.getElementById("password");
+    const icon = toggle.querySelector("i");
+    const form = document.getElementById("loginForm");
+    const errorBox = document.getElementById("errorBox");
+    const submitButton = document.getElementById("submitButton");
 
-                    <input class="luxury-input w-full px-4 py-3 bg-gray-50 border border-gray-200 text-sm" id="password"
-                        type="password" placeholder="••••••••" required>
+    toggle.addEventListener("click", () => {
+      const isPassword = passwordInput.getAttribute("type") === "password";
 
-                    <button type="button" id="togglePassword" class="absolute right-3 top-9 text-xs text-gray-500">
-                        <i class="fas fa-eye"></i>
-                    </button>
+      if (isPassword) {
+        passwordInput.setAttribute("type", "text");
+        icon.classList.remove("fa-eye");
+        icon.classList.add("fa-eye-slash");
+      } else {
+        passwordInput.setAttribute("type", "password");
+        icon.classList.remove("fa-eye-slash");
+        icon.classList.add("fa-eye");
+      }
+    });
 
-                </div>
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
 
-                <div id="errorBox" class="hidden text-red-500 text-sm text-center"></div>
+      errorBox.textContent = "";
+      errorBox.classList.add("hidden");
 
-                <div class="pt-4">
-                    <button
-                        class="w-full py-4 bg-kb-gold hover:bg-kb-gold-light text-kb-navy font-bold uppercase tracking-[0.2em] text-xs shadow-md"
-                        type="submit">
-                        Ingresar
-                    </button>
-                </div>
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value;
 
-            </form>
+      if (!username || !password) {
+        errorBox.textContent = "Captura correo y contraseña.";
+        errorBox.classList.remove("hidden");
+        return;
+      }
 
-            <footer class="mt-12 text-center">
-                <p class="text-[10px] text-gray-400 uppercase tracking-widest">
-                    © <span id="current-year"></span> K&B Studio
-                </p>
-            </footer>
+      const originalButtonText = submitButton.textContent;
+      submitButton.disabled = true;
+      submitButton.textContent = "Ingresando...";
 
-        </section>
-    </main>
-
-    <script>
-        document.getElementById("current-year").textContent = new Date().getFullYear();
-
-        const toggle = document.getElementById("togglePassword");
-        const passwordInput = document.getElementById("password");
-        const form = document.getElementById("loginForm");
-        const errorBox = document.getElementById("errorBox");
-        const submitButton = form.querySelector('button[type="submit"]');
-
-        toggle.addEventListener("click", () => {
-            const isPassword = passwordInput.getAttribute("type") === "password";
-            passwordInput.setAttribute("type", isPassword ? "text" : "password");
-            toggle.textContent = isPassword ? "ocultar" : "ver";
+      try {
+        const response = await fetch("/api/auth/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            username: username,
+            password: password
+          })
         });
 
-        form.addEventListener("submit", async (e) => {
-            e.preventDefault();
+        if (!response.ok) {
+          let errorMessage = "No fue posible iniciar sesión";
 
-            errorBox.textContent = "";
-            errorBox.classList.add("hidden");
+          if (response.status === 401) {
+            errorMessage = "Correo o contraseña incorrectos";
+          } else if (response.status === 403) {
+            errorMessage = "Usuario inactivo o acceso denegado";
+          } else if (response.status === 500) {
+            errorMessage = "Ocurrió un error interno en el servidor";
+          }
 
-            const username = document.getElementById("username").value.trim();
-            const password = document.getElementById("password").value;
+          throw new Error(errorMessage);
+        }
 
-            if (!username || !password) {
-                errorBox.textContent = "Captura usuario y contraseña.";
-                errorBox.classList.remove("hidden");
-                return;
-            }
+        const data = await response.json();
 
-            const originalButtonText = submitButton.textContent;
-            submitButton.disabled = true;
-            submitButton.textContent = "Ingresando...";
+        if (data.authenticated) {
+          window.location.href = "/index.html";
+          return;
+        }
 
-            try {
-                const response = await fetch("/api/auth/login", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    credentials: "include",
-                    body: JSON.stringify({
-                        username,
-                        password
-                    })
-                });
-
-                if (!response.ok) {
-                    let errorMessage = "Credenciales incorrectas";
-
-                    try {
-                        const contentType = response.headers.get("content-type") || "";
-
-                        if (contentType.includes("application/json")) {
-                            const errorData = await response.json();
-                            errorMessage =
-                                errorData.message ||
-                                errorData.error ||
-                                "No fue posible iniciar sesión";
-                        } else {
-                            const errorText = await response.text();
-                            if (errorText && errorText.trim()) {
-                                errorMessage = errorText;
-                            }
-                        }
-                    } catch (_) {
-                    }
-
-                    throw new Error(errorMessage);
-                }
-
-                const data = await response.json();
-
-                if (data.authenticated) {
-                    window.location.href = "/index.html";
-                    return;
-                }
-
-                throw new Error("No fue posible iniciar sesión");
-            } catch (error) {
-                errorBox.textContent = error.message || "Ocurrió un error al iniciar sesión";
-                errorBox.classList.remove("hidden");
-            } finally {
-                submitButton.disabled = false;
-                submitButton.textContent = originalButtonText;
-            }
-        });
-    </script>
-
-
+        throw new Error("No fue posible iniciar sesión");
+      } catch (error) {
+        errorBox.textContent = error.message || "Ocurrió un error al iniciar sesión";
+        errorBox.classList.remove("hidden");
+      } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = originalButtonText;
+      }
+    });
+</script>
 </body>
-
 </html>
