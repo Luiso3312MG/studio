@@ -20,20 +20,23 @@ public class SecurityConfig {
                                 "/",
                                 "/login.html",
                                 "/index.html",
+                                "/students.html",
+                                "/class-admin.html",
                                 "/favicon.ico",
                                 "/css/**",
                                 "/js/**",
                                 "/images/**"
                         ).permitAll()
+
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/auth/me").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/logout").permitAll()
+                        .requestMatchers("/api/themes/**").permitAll()
+
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/auth/ping").permitAll()
 
-                        // APIs protegidas
-                        .requestMatchers("/api/auth/me").authenticated()
-                        .requestMatchers("/api/auth/logout").authenticated()
-                        .requestMatchers("/api/themes/**").authenticated()
-                        .anyRequest().authenticated()
+                        .anyRequest().permitAll()
                 )
                 .formLogin(form -> form.disable())
                 .httpBasic(basic -> basic.disable());
