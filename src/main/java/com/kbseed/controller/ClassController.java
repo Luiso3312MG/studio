@@ -1,5 +1,7 @@
 package com.kbseed.controller;
 
+import com.kbseed.dto.BulkClassesResponse;
+import com.kbseed.dto.CreateBulkClassesRequest;
 import com.kbseed.dto.ClassDTO;
 import com.kbseed.service.ClassService;
 import org.springframework.web.bind.annotation.*;
@@ -40,4 +42,10 @@ public class ClassController {
         classService.eliminar(id);
         return "Clase eliminada correctamente";
     }
+
+    @PostMapping("/bulk")
+    public BulkClassesResponse crearClasesMasivas(@RequestBody CreateBulkClassesRequest request) {
+        return classService.crearClasesMasivas(request);
+    }
+
 }
