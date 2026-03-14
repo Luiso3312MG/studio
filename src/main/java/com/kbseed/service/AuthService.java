@@ -2,7 +2,6 @@ package com.kbseed.service;
 
 import com.kbseed.dto.AuthRequest;
 import com.kbseed.dto.AuthResponse;
-import com.kbseed.dto.MeResponse;
 import com.kbseed.entity.UserEntity;
 import com.kbseed.repository.UserRepository;
 import jakarta.servlet.http.HttpSession;
@@ -22,56 +21,31 @@ public class AuthService {
     }
 
     public AuthResponse login(AuthRequest request) {
-        System.out.println(">>> Intentando login con username: " + request.getUsername());
 
-        UserEntity user = userRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.UNAUTHORIZED, "Usuario o contraseña incorrectos"
-                ));
+        UserEntity user = userRepository.findByEmail(request.getUsername())
+                .orElseThrow(() ->
+                        new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Usuario o contraseña incorrectos")
+                );
 
-        if (!user.getPassword().equals(request.getPassword())) {
-            throw new ResponseStatusException(
-                    HttpStatus.UNAUTHORIZED, "Usuario o contraseña incorrectos"
-            );
+        // Comparación simple (temporal)
+        if (!user.getPasswordHash().equals(request.getPassword())) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Usuario o contraseña incorrectos");
         }
 
-        if (user.getStatus() != null && !user.getStatus().equalsIgnoreCase("ACTIVO")) {
-            throw new ResponseStatusException(
-                    HttpStatus.FORBIDDEN, "Usuario inactivo"
-            );
+        if (user.getIsActive() != null && !user.getIsActive()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Usuario inactivo");
         }
 
         session.setAttribute("USER_ID", user.getId());
         session.setAttribute("STUDIO_ID", user.getStudioId());
-        session.setAttribute("USERNAME", user.getUsername());
-        session.setAttribute("ROLE", user.getRole());
+        session.setAttribute("EMAIL", user.getEmail());
 
         AuthResponse response = new AuthResponse();
         response.setAuthenticated(true);
         response.setUserId(user.getId());
         response.setStudioId(user.getStudioId());
-        response.setUsername(user.getUsername());
+        response.setUsername(user.getEmail());
         response.setFullName(user.getFullName());
-        response.setRole(user.getRole());
-
-        return response;
-    }
-
-    public MeResponse me() {
-        Long userId = (Long) session.getAttribute("USER_ID");
-        if (userId == null) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "No autenticado");
-        }
-
-        UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
-
-        MeResponse response = new MeResponse();
-        response.setId(user.getId());
-        response.setStudioId(user.getStudioId());
-        response.setUsername(user.getUsername());
-        response.setFullName(user.getFullName());
-        response.setRole(user.getRole());
 
         return response;
     }
