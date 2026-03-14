@@ -100,7 +100,7 @@
                         type="password" placeholder="••••••••" required>
 
                     <button type="button" id="togglePassword" class="absolute right-3 top-9 text-xs text-gray-500">
-                        ver
+                        <i class="fas fa-eye"></i>
                     </button>
 
                 </div>
@@ -138,7 +138,7 @@
         toggle.addEventListener("click", () => {
             const isPassword = passwordInput.getAttribute("type") === "password";
             passwordInput.setAttribute("type", isPassword ? "text" : "password");
-            toggle.textContent = isPassword ? <i class="fas fa-eye"></i> : <i class="fas fa-eye-slash"></i>;
+            toggle.textContent = isPassword ? "ocultar" : "ver";
         });
 
         form.addEventListener("submit", async (e) => {
