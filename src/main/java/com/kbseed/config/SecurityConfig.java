@@ -16,26 +16,23 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(auth -> auth
-                        // públicos
                         .requestMatchers(
                                 "/",
                                 "/login.html",
+                                "/index.html",
                                 "/favicon.ico",
                                 "/css/**",
                                 "/js/**",
                                 "/images/**"
                         ).permitAll()
-
-                        // login público
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
-
-                        // preflight
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-
-                        // temporal si quieres seguir probando
                         .requestMatchers(HttpMethod.GET, "/api/auth/ping").permitAll()
 
-                        // todo lo demás protegido
+                        // APIs protegidas
+                        .requestMatchers("/api/auth/me").authenticated()
+                        .requestMatchers("/api/auth/logout").authenticated()
+                        .requestMatchers("/api/themes/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form.disable())

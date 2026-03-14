@@ -13,6 +13,58 @@
     rel="stylesheet" />
 
   <script>
+    async function validarSesion() {
+      try {
+        const response = await fetch("/api/auth/me", {
+          method: "GET",
+          credentials: "include"
+        });
+
+        if (!response.ok) {
+          window.location.href = "/login.html";
+          return null;
+        }
+
+        return await response.json();
+      } catch (error) {
+        window.location.href = "/login.html";
+        return null;
+      }
+    }
+
+    async function cargarTema() {
+      try {
+        const response = await fetch("/api/themes/current", {
+          method: "GET",
+          credentials: "include"
+        });
+
+        if (!response.ok) return;
+
+        const theme = await response.json();
+
+        if (theme.backgroundColor) {
+          document.body.style.backgroundColor = theme.backgroundColor;
+        }
+      } catch (error) {
+        console.error("Error cargando tema:", error);
+      }
+    }
+
+    async function initApp() {
+      const user = await validarSesion();
+      if (!user) return;
+
+      console.log("Usuario autenticado:", user);
+
+      await cargarTema();
+
+      // aquí sigue la carga normal de tu pantalla
+    }
+
+    initApp();
+  </script>
+  <script>
     const themeColors = {
       background_color: "#F4827C",
       background_light: "#F5E9E7",
