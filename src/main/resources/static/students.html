@@ -11,6 +11,85 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <script>
+    let currentUser = null;
+    let studioId = null;
+
+    async function validarSesion() {
+      try {
+        const response = await fetch("/api/auth/me", {
+          method: "GET",
+          credentials: "include"
+        });
+
+        console.log("STATUS /api/auth/me:", response.status);
+
+        if (!response.ok) {
+          window.location.href = "/login.html";
+          return null;
+        }
+
+        const user = await response.json();
+        console.log("Usuario autenticado:", user);
+        return user;
+      } catch (error) {
+        console.error("Error validando sesión:", error);
+        window.location.href = "/login.html";
+        return null;
+      }
+    }
+
+    async function cargarTema() {
+      try {
+        const response = await fetch("/api/themes/current", {
+          method: "GET",
+          credentials: "include"
+        });
+
+        console.log("STATUS /api/themes/current:", response.status);
+
+        if (!response.ok) return;
+
+        const theme = await response.json();
+        console.log("Tema cargado:", theme);
+
+        if (theme.backgroundColor) {
+          document.body.style.backgroundColor = theme.backgroundColor;
+        }
+      } catch (error) {
+        console.error("Error cargando tema:", error);
+      }
+    }
+
+    async function bootstrapAuth() {
+      currentUser = await validarSesion();
+      if (!currentUser) return false;
+
+      studioId = currentUser.studioId;
+      await cargarTema();
+      return true;
+    }
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      const ok = await bootstrapAuth();
+      if (!ok) return;
+
+      await loadClients();
+      initClientModal();
+      initClientForm();
+      initSearch();
+      initLogout();
+    });
+  </script>
+
+  <script>
+    const themeColors = {
+      background_color: "#F4827C",
+      background_light: "#F5E9E7",
+      background_dark: "#2B2B2B",
+      line_color: "#D6C3A5",
+      text_color: "#2B2B2B"
+    };
+
     tailwind.config = {
       darkMode: "class",
       theme: {
@@ -23,6 +102,7 @@
             "text-sub": "#6D6766",
             "background-light": "#F5E9E7",
             "background-dark": "#221110",
+            "accent-border": "#D6C3A5"
           },
           fontFamily: {
             display: ["Manrope", "sans-serif"]
@@ -35,12 +115,18 @@
           },
         },
       },
-    }
+    };
   </script>
 
   <style>
+    :root {
+      --text: #000000;
+      --primary: #111111;
+    }
+
     body {
       font-family: 'Manrope', sans-serif;
+      color: var(--text);
     }
 
     .material-symbols-outlined {
@@ -103,7 +189,7 @@
             <p class="text-sm font-bold truncate">Admin Studio</p>
             <p class="text-xs text-text-sub truncate">admin@studio.com</p>
           </div>
-          <span class="material-symbols-outlined text-text-sub text-sm cursor-pointer">logout</span>
+          <span id="btn-logout" class="material-symbols-outlined text-text-sub text-sm cursor-pointer">logout</span>
         </div>
       </div>
     </aside>
@@ -161,8 +247,7 @@
 
       <!-- Table Container -->
       <div class="px-8 flex-1">
-        <div
-          class="bg-white/70 dark:bg-background-dark/20 backdrop-blur-sm border border-accent/20 rounded-3xl overflow-hidden shadow-sm">
+        <div class="bg-white/70 dark:bg-background-dark/20 backdrop-blur-sm border border-accent/20 rounded-3xl overflow-hidden shadow-sm">
           <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
               <thead>
@@ -172,8 +257,7 @@
                   <th class="px-6 py-5 text-sm font-bold text-text-sub uppercase tracking-wider">Teléfono</th>
                   <th class="px-6 py-5 text-sm font-bold text-text-sub uppercase tracking-wider">Nacimiento</th>
                   <th class="px-6 py-5 text-sm font-bold text-text-sub uppercase tracking-wider">Estado</th>
-                  <th class="px-6 py-5 text-sm font-bold text-text-sub uppercase tracking-wider text-right">Acciones
-                  </th>
+                  <th class="px-6 py-5 text-sm font-bold text-text-sub uppercase tracking-wider text-right">Acciones</th>
                 </tr>
               </thead>
               <tbody id="tabla-alumnos-body" class="divide-y divide-accent/5">
@@ -194,8 +278,7 @@
               <span class="material-symbols-outlined">chevron_left</span>
             </button>
 
-            <button
-              class="size-10 flex items-center justify-center rounded-xl bg-accent text-text-main font-bold shadow-sm">
+            <button class="size-10 flex items-center justify-center rounded-xl bg-accent text-text-main font-bold shadow-sm">
               1
             </button>
 
@@ -223,36 +306,42 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label class="block text-sm font-bold mb-1">Nombre</label>
-            <input id="input-first-name" type="text" class="w-full border border-accent/20 rounded-xl px-3 py-2"
+            <input id="input-first-name" type="text"
+              class="w-full border border-accent/20 rounded-xl px-3 py-2"
               placeholder="Nombre" required />
           </div>
 
           <div>
             <label class="block text-sm font-bold mb-1">Apellido</label>
-            <input id="input-last-name" type="text" class="w-full border border-accent/20 rounded-xl px-3 py-2"
+            <input id="input-last-name" type="text"
+              class="w-full border border-accent/20 rounded-xl px-3 py-2"
               placeholder="Apellido" />
           </div>
 
           <div>
             <label class="block text-sm font-bold mb-1">Email</label>
-            <input id="input-email" type="email" class="w-full border border-accent/20 rounded-xl px-3 py-2"
+            <input id="input-email" type="email"
+              class="w-full border border-accent/20 rounded-xl px-3 py-2"
               placeholder="correo@ejemplo.com" />
           </div>
 
           <div>
             <label class="block text-sm font-bold mb-1">Teléfono</label>
-            <input id="input-phone" type="text" class="w-full border border-accent/20 rounded-xl px-3 py-2"
+            <input id="input-phone" type="text"
+              class="w-full border border-accent/20 rounded-xl px-3 py-2"
               placeholder="5512345678" />
           </div>
 
           <div>
             <label class="block text-sm font-bold mb-1">Fecha de nacimiento</label>
-            <input id="input-birth-date" type="date" class="w-full border border-accent/20 rounded-xl px-3 py-2" />
+            <input id="input-birth-date" type="date"
+              class="w-full border border-accent/20 rounded-xl px-3 py-2" />
           </div>
 
           <div>
             <label class="block text-sm font-bold mb-1">Estado</label>
-            <select id="input-status" class="w-full border border-accent/20 rounded-xl px-3 py-2">
+            <select id="input-status"
+              class="w-full border border-accent/20 rounded-xl px-3 py-2">
               <option value="ACTIVE">ACTIVE</option>
               <option value="INACTIVE">INACTIVE</option>
             </select>
@@ -261,18 +350,21 @@
           <div>
             <label class="block text-sm font-bold mb-1">Contacto emergencia</label>
             <input id="input-emergency-name" type="text"
-              class="w-full border border-accent/20 rounded-xl px-3 py-2" placeholder="Nombre contacto" />
+              class="w-full border border-accent/20 rounded-xl px-3 py-2"
+              placeholder="Nombre contacto" />
           </div>
 
           <div>
             <label class="block text-sm font-bold mb-1">Teléfono emergencia</label>
             <input id="input-emergency-phone" type="text"
-              class="w-full border border-accent/20 rounded-xl px-3 py-2" placeholder="5511111111" />
+              class="w-full border border-accent/20 rounded-xl px-3 py-2"
+              placeholder="5511111111" />
           </div>
 
           <div class="md:col-span-2">
             <label class="block text-sm font-bold mb-1">Notas</label>
-            <textarea id="input-notes" class="w-full border border-accent/20 rounded-xl px-3 py-2"
+            <textarea id="input-notes"
+              class="w-full border border-accent/20 rounded-xl px-3 py-2"
               placeholder="Notas del alumno"></textarea>
           </div>
         </div>
@@ -283,7 +375,8 @@
             Cancelar
           </button>
 
-          <button type="submit" class="px-4 py-2 rounded-xl bg-primary text-white font-bold hover:brightness-95">
+          <button type="submit"
+            class="px-4 py-2 rounded-xl bg-primary text-white font-bold hover:brightness-95">
             Crear Alumno
           </button>
         </div>
@@ -292,35 +385,25 @@
   </div>
 
   <script>
-    let studioId = 1;
     let clientsData = [];
     let filteredClientsData = [];
 
-    const swalBaseConfig = {
-      confirmButtonColor: "#f4827c",
-      cancelButtonColor: "#6D6766"
-    };
-
-    document.addEventListener("DOMContentLoaded", () => {
-      loadClients();
-      initClientModal();
-      initClientForm();
-      initSearch();
-    });
-
     async function loadClients() {
       try {
-        const response = await fetch("/api/clients");
+        const response = await fetch("/api/clients", {
+          method: "GET",
+          credentials: "include"
+        });
 
         if (!response.ok) {
           const text = await response.text();
           console.error("Error cargando alumnos:", response.status, text);
 
           await Swal.fire({
-            ...swalBaseConfig,
             icon: "error",
             title: "Error",
-            text: "No se pudieron cargar los alumnos"
+            text: "No se pudieron cargar los alumnos",
+            confirmButtonColor: "#dc2626"
           });
           return;
         }
@@ -335,10 +418,10 @@
         console.error("Error cargando alumnos:", error);
 
         await Swal.fire({
-          ...swalBaseConfig,
           icon: "error",
           title: "Error",
-          text: "Ocurrió un error al cargar los alumnos"
+          text: "Ocurrió un error al cargar los alumnos",
+          confirmButtonColor: "#dc2626"
         });
       }
     }
@@ -509,6 +592,7 @@
         try {
           const response = await fetch("/api/clients", {
             method: "POST",
+            credentials: "include",
             headers: {
               "Content-Type": "application/json"
             },
@@ -520,10 +604,10 @@
             console.error("Error creando alumno:", response.status, text);
 
             await Swal.fire({
-              ...swalBaseConfig,
               icon: "error",
               title: "Error",
-              text: "No se pudo crear el alumno"
+              text: "No se pudo crear el alumno",
+              confirmButtonColor: "#dc2626"
             });
             return;
           }
@@ -534,19 +618,19 @@
           await loadClients();
 
           await Swal.fire({
-            ...swalBaseConfig,
             icon: "success",
             title: "Alumno creado",
-            text: "El alumno fue registrado correctamente"
+            text: "El alumno fue registrado correctamente",
+            confirmButtonColor: "#16a34a"
           });
         } catch (error) {
           console.error("Error creando alumno:", error);
 
           await Swal.fire({
-            ...swalBaseConfig,
             icon: "error",
             title: "Error",
-            text: "Ocurrió un error al crear el alumno"
+            text: "Ocurrió un error al crear el alumno",
+            confirmButtonColor: "#dc2626"
           });
         }
       });
@@ -554,11 +638,12 @@
 
     async function deleteClient(id) {
       const result = await Swal.fire({
-        ...swalBaseConfig,
         title: "¿Eliminar alumno?",
         text: "Esta acción no se puede deshacer",
         icon: "warning",
         showCancelButton: true,
+        confirmButtonColor: "#dc2626",
+        cancelButtonColor: "#6b7280",
         confirmButtonText: "Sí, eliminar",
         cancelButtonText: "Cancelar"
       });
@@ -567,7 +652,8 @@
 
       try {
         const response = await fetch(`/api/clients/${id}`, {
-          method: "DELETE"
+          method: "DELETE",
+          credentials: "include"
         });
 
         if (!response.ok) {
@@ -575,10 +661,10 @@
           console.error("Error eliminando alumno:", response.status, text);
 
           await Swal.fire({
-            ...swalBaseConfig,
             icon: "error",
             title: "Error",
-            text: "No se pudo eliminar el alumno"
+            text: "No se pudo eliminar el alumno",
+            confirmButtonColor: "#dc2626"
           });
           return;
         }
@@ -586,29 +672,62 @@
         await loadClients();
 
         await Swal.fire({
-          ...swalBaseConfig,
           icon: "success",
           title: "Alumno eliminado",
-          text: "El alumno fue eliminado correctamente"
+          text: "El alumno fue eliminado correctamente",
+          confirmButtonColor: "#16a34a"
         });
       } catch (error) {
         console.error("Error eliminando alumno:", error);
 
         await Swal.fire({
-          ...swalBaseConfig,
           icon: "error",
           title: "Error",
-          text: "Ocurrió un error al eliminar el alumno"
+          text: "Ocurrió un error al eliminar el alumno",
+          confirmButtonColor: "#dc2626"
         });
       }
     }
 
     function showCreditsInfo() {
       Swal.fire({
-        ...swalBaseConfig,
         icon: "info",
         title: "Próximamente",
-        text: "Después conectamos créditos o membresías"
+        text: "Después conectamos créditos o membresías",
+        confirmButtonColor: "#0A1128"
+      });
+    }
+
+    function initLogout() {
+      const btnLogout = document.getElementById("btn-logout");
+      if (!btnLogout) return;
+
+      btnLogout.addEventListener("click", async () => {
+        const result = await Swal.fire({
+          title: "¿Cerrar sesión?",
+          text: "Tu sesión actual se cerrará",
+          icon: "question",
+          showCancelButton: true,
+          confirmButtonColor: "#0A1128",
+          cancelButtonColor: "#6b7280",
+          confirmButtonText: "Cerrar sesión",
+          cancelButtonText: "Cancelar"
+        });
+
+        if (!result.isConfirmed) return;
+
+        try {
+          const response = await fetch("/api/auth/logout", {
+            method: "POST",
+            credentials: "include"
+          });
+
+          console.log("Logout status:", response.status);
+        } catch (error) {
+          console.error("Error cerrando sesión:", error);
+        }
+
+        window.location.href = "/login.html";
       });
     }
   </script>

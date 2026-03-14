@@ -14,18 +14,101 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <script>
+    let currentUser = null;
+    let studioId = null;
+    let roomsData = [];
+    let classTypesData = [];
+
+    async function validarSesion() {
+      try {
+        const response = await fetch("/api/auth/me", {
+          method: "GET",
+          credentials: "include"
+        });
+
+        console.log("STATUS /api/auth/me:", response.status);
+
+        if (!response.ok) {
+          window.location.href = "/login.html";
+          return null;
+        }
+
+        const user = await response.json();
+        console.log("Usuario autenticado:", user);
+        return user;
+      } catch (error) {
+        console.error("Error validando sesión:", error);
+        window.location.href = "/login.html";
+        return null;
+      }
+    }
+
+    async function cargarTema() {
+      try {
+        const response = await fetch("/api/themes/current", {
+          method: "GET",
+          credentials: "include"
+        });
+
+        console.log("STATUS /api/themes/current:", response.status);
+
+        if (!response.ok) return;
+
+        const theme = await response.json();
+        console.log("Tema cargado:", theme);
+
+        if (theme.backgroundColor) {
+          document.body.style.backgroundColor = theme.backgroundColor;
+        }
+      } catch (error) {
+        console.error("Error cargando tema:", error);
+      }
+    }
+
+    async function bootstrapAuth() {
+      currentUser = await validarSesion();
+      if (!currentUser) return false;
+
+      studioId = currentUser.studioId;
+      await cargarTema();
+      return true;
+    }
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      const ok = await bootstrapAuth();
+      if (!ok) return;
+
+      initTabs();
+      initForms();
+      await loadRooms();
+      await loadClassTypes();
+      fillSelects();
+      initLogout();
+    });
+  </script>
+
+  <script>
+    const themeColors = {
+      background_color: "#F4827C",
+      background_light: "#F5E9E7",
+      background_dark: "#2B2B2B",
+      line_color: "#D6C3A5",
+      text_color: "#2B2B2B"
+    };
+
     tailwind.config = {
       darkMode: "class",
       theme: {
         extend: {
           colors: {
-            primary: "#F4827C",
+            primary: themeColors.background_color,
             accent: "#E7C7C2",
             premium: "#D6C3A5",
-            "background-light": "#F5E9E7",
-            "background-dark": "#2B2B2B",
-            "accent-border": "#D6C3A5",
-            "text-main": "#2B2B2B"
+            "background-light": themeColors.background_light,
+            "background-dark": themeColors.background_dark,
+            "accent-border": themeColors.line_color,
+            "text-main": themeColors.text_color,
+            "text-sub": "#6D6766"
           }
         }
       }
@@ -78,6 +161,7 @@
           <span class="text-sm font-semibold">Config. clases</span>
         </a>
       </nav>
+
       <div class="p-4 mt-auto">
         <div class="mt-4 flex items-center gap-3 px-4 py-2">
           <div class="size-8 rounded-full bg-accent/40 overflow-hidden">
@@ -88,7 +172,7 @@
             <p class="text-sm font-bold truncate">Admin Studio</p>
             <p class="text-xs text-text-sub truncate">admin@studio.com</p>
           </div>
-          <span class="material-symbols-outlined text-text-sub text-sm cursor-pointer">logout</span>
+          <span id="btn-logout" class="material-symbols-outlined text-text-sub text-sm cursor-pointer">logout</span>
         </div>
       </div>
     </aside>
@@ -258,34 +342,39 @@
             <form class="space-y-4" id="form-single-class">
               <div>
                 <label class="block text-sm font-bold mb-1">Tipo de clase</label>
-                <select id="single-class-type" class="w-full border border-accent-border rounded-lg px-3 py-2" required></select>
+                <select id="single-class-type" class="w-full border border-accent-border rounded-lg px-3 py-2"
+                  required></select>
               </div>
 
               <div>
                 <label class="block text-sm font-bold mb-1">Salón</label>
-                <select id="single-room" class="w-full border border-accent-border rounded-lg px-3 py-2" required></select>
+                <select id="single-room" class="w-full border border-accent-border rounded-lg px-3 py-2"
+                  required></select>
               </div>
 
               <div>
                 <label class="block text-sm font-bold mb-1">Instructor</label>
-                <input id="single-coach" type="text" class="w-full border border-accent-border rounded-lg px-3 py-2"
-                  placeholder="Ej. Carla" required />
+                <input id="single-coach" type="text"
+                  class="w-full border border-accent-border rounded-lg px-3 py-2" placeholder="Ej. Carla" required />
               </div>
 
               <div class="grid grid-cols-3 gap-4">
                 <div>
                   <label class="block text-sm font-bold mb-1">Fecha</label>
-                  <input id="single-date" type="date" class="w-full border border-accent-border rounded-lg px-3 py-2" required />
+                  <input id="single-date" type="date" class="w-full border border-accent-border rounded-lg px-3 py-2"
+                    required />
                 </div>
 
                 <div>
                   <label class="block text-sm font-bold mb-1">Hora inicio</label>
-                  <input id="single-start" type="time" class="w-full border border-accent-border rounded-lg px-3 py-2" required />
+                  <input id="single-start" type="time"
+                    class="w-full border border-accent-border rounded-lg px-3 py-2" required />
                 </div>
 
                 <div>
                   <label class="block text-sm font-bold mb-1">Hora fin</label>
-                  <input id="single-end" type="time" class="w-full border border-accent-border rounded-lg px-3 py-2" required />
+                  <input id="single-end" type="time" class="w-full border border-accent-border rounded-lg px-3 py-2"
+                    required />
                 </div>
               </div>
 
@@ -308,41 +397,47 @@
             <form class="space-y-4" id="form-recurring-class">
               <div>
                 <label class="block text-sm font-bold mb-1">Tipo de clase</label>
-                <select id="recurring-class-type" class="w-full border border-accent-border rounded-lg px-3 py-2" required></select>
+                <select id="recurring-class-type" class="w-full border border-accent-border rounded-lg px-3 py-2"
+                  required></select>
               </div>
 
               <div>
                 <label class="block text-sm font-bold mb-1">Salón</label>
-                <select id="recurring-room" class="w-full border border-accent-border rounded-lg px-3 py-2" required></select>
+                <select id="recurring-room" class="w-full border border-accent-border rounded-lg px-3 py-2"
+                  required></select>
               </div>
 
               <div>
                 <label class="block text-sm font-bold mb-1">Instructor</label>
-                <input id="recurring-coach" type="text" class="w-full border border-accent-border rounded-lg px-3 py-2"
-                  placeholder="Ej. Carla" required />
+                <input id="recurring-coach" type="text"
+                  class="w-full border border-accent-border rounded-lg px-3 py-2" placeholder="Ej. Carla" required />
               </div>
 
               <div class="grid grid-cols-2 gap-4">
                 <div>
                   <label class="block text-sm font-bold mb-1">Fecha inicio</label>
-                  <input id="recurring-start-date" type="date" class="w-full border border-accent-border rounded-lg px-3 py-2" required />
+                  <input id="recurring-start-date" type="date"
+                    class="w-full border border-accent-border rounded-lg px-3 py-2" required />
                 </div>
 
                 <div>
                   <label class="block text-sm font-bold mb-1">Fecha fin</label>
-                  <input id="recurring-end-date" type="date" class="w-full border border-accent-border rounded-lg px-3 py-2" required />
+                  <input id="recurring-end-date" type="date"
+                    class="w-full border border-accent-border rounded-lg px-3 py-2" required />
                 </div>
               </div>
 
               <div class="grid grid-cols-3 gap-4">
                 <div>
                   <label class="block text-sm font-bold mb-1">Hora inicio</label>
-                  <input id="recurring-start-time" type="time" class="w-full border border-accent-border rounded-lg px-3 py-2" required />
+                  <input id="recurring-start-time" type="time"
+                    class="w-full border border-accent-border rounded-lg px-3 py-2" required />
                 </div>
 
                 <div>
                   <label class="block text-sm font-bold mb-1">Hora fin</label>
-                  <input id="recurring-end-time" type="time" class="w-full border border-accent-border rounded-lg px-3 py-2" required />
+                  <input id="recurring-end-time" type="time"
+                    class="w-full border border-accent-border rounded-lg px-3 py-2" required />
                 </div>
 
                 <div>
@@ -365,8 +460,7 @@
                 </div>
               </div>
 
-              <button type="submit"
-                class="px-4 py-2 rounded-lg bg-black text-white font-bold hover:brightness-95">
+              <button type="submit" class="px-4 py-2 rounded-lg bg-black text-white font-bold hover:brightness-95">
                 Generar clases del rango
               </button>
             </form>
@@ -377,18 +471,6 @@
   </div>
 
   <script>
-    let studioId = 1;
-    let roomsData = [];
-    let classTypesData = [];
-
-    document.addEventListener("DOMContentLoaded", async () => {
-      initTabs();
-      initForms();
-      await loadRooms();
-      await loadClassTypes();
-      fillSelects();
-    });
-
     function initTabs() {
       const buttons = document.querySelectorAll(".tab-btn");
       const sections = document.querySelectorAll(".tab-section");
@@ -425,6 +507,7 @@
         try {
           const response = await fetch("/api/rooms", {
             method: "POST",
+            credentials: "include",
             headers: {
               "Content-Type": "application/json"
             },
@@ -481,6 +564,7 @@
         try {
           const response = await fetch("/api/class-types", {
             method: "POST",
+            credentials: "include",
             headers: {
               "Content-Type": "application/json"
             },
@@ -554,6 +638,7 @@
         try {
           const response = await fetch("/api/classes", {
             method: "POST",
+            credentials: "include",
             headers: {
               "Content-Type": "application/json"
             },
@@ -624,6 +709,7 @@
         try {
           const response = await fetch("/api/classes/bulk", {
             method: "POST",
+            credentials: "include",
             headers: {
               "Content-Type": "application/json"
             },
@@ -666,7 +752,10 @@
 
     async function loadRooms() {
       try {
-        const response = await fetch(`/api/rooms?studioId=${studioId}`);
+        const response = await fetch(`/api/rooms?studioId=${studioId}`, {
+          method: "GET",
+          credentials: "include"
+        });
 
         if (!response.ok) {
           const text = await response.text();
@@ -683,7 +772,10 @@
 
     async function loadClassTypes() {
       try {
-        const response = await fetch(`/api/class-types?studioId=${studioId}`);
+        const response = await fetch(`/api/class-types?studioId=${studioId}`, {
+          method: "GET",
+          credentials: "include"
+        });
 
         if (!response.ok) {
           const text = await response.text();
@@ -781,6 +873,39 @@
             select.innerHTML += `<option value="${type.id}" data-capacity="${type.capacity}" data-duration="${type.durationMinutes}">${type.name}</option>`;
           }
         });
+      });
+    }
+
+    function initLogout() {
+      const btnLogout = document.getElementById("btn-logout");
+      if (!btnLogout) return;
+
+      btnLogout.addEventListener("click", async () => {
+        const result = await Swal.fire({
+          title: "¿Cerrar sesión?",
+          text: "Tu sesión actual se cerrará",
+          icon: "question",
+          showCancelButton: true,
+          confirmButtonColor: "#0A1128",
+          cancelButtonColor: "#6b7280",
+          confirmButtonText: "Cerrar sesión",
+          cancelButtonText: "Cancelar"
+        });
+
+        if (!result.isConfirmed) return;
+
+        try {
+          const response = await fetch("/api/auth/logout", {
+            method: "POST",
+            credentials: "include"
+          });
+
+          console.log("Logout status:", response.status);
+        } catch (error) {
+          console.error("Error cerrando sesión:", error);
+        }
+
+        window.location.href = "/login.html";
       });
     }
   </script>
