@@ -707,10 +707,20 @@
 
       return reservations
         .map(item => {
-          if (item == null) return null;
+          if (!item) return null;
+
+          // Formas comunes posibles del backend
           if (item.clientId != null) return Number(item.clientId);
-          if (item.client && item.client.id != null) return Number(item.client.id);
           if (item.idClient != null) return Number(item.idClient);
+          if (item.client_id != null) return Number(item.client_id);
+
+          // Si viene anidado
+          if (item.client && item.client.id != null) return Number(item.client.id);
+          if (item.clients && item.clients.id != null) return Number(item.clients.id);
+
+          // Si el backend regresa el alumno completo como reservation.client
+          if (item.client && item.client.clientId != null) return Number(item.client.clientId);
+
           return null;
         })
         .filter(id => Number.isFinite(id));
@@ -728,9 +738,9 @@
       const selectedClass = classData.find(clase => Number(clase.id) === Number(classId));
       if (selectedClass && textoClase) {
         textoClase.innerHTML = `
-        <span class="material-symbols-outlined text-sm">event</span>
-        ${selectedClass.classTypeName} - ${formatTime(selectedClass.startTime)}
-      `;
+      <span class="material-symbols-outlined text-sm">event</span>
+      ${selectedClass.classTypeName} - ${formatTime(selectedClass.startTime)}
+    `;
       }
 
       try {
@@ -761,7 +771,10 @@
 
           if (reservationsResponse.ok) {
             const reservations = await reservationsResponse.json();
+            console.log("Reservations raw:", reservations);
+
             enrolledClientIds = extractClientIdsFromReservations(reservations);
+            console.log("enrolledClientIds:", enrolledClientIds);
           } else {
             const text = await reservationsResponse.text();
             console.warn("No se pudieron cargar inscritos, se asumirá clase sin inscritos:", reservationsResponse.status, text);
@@ -772,12 +785,13 @@
 
         allClientsForEnrollment = clients
           .filter(client => Number(client.studioId) === Number(studioId))
-          .filter(client => client.status === "ACTIVE")
-          .filter(client => !enrolledClientIds.includes(Number(client.id)));
+          .filter(client => client.status === "ACTIVE");
 
-        filteredClientsForEnrollment = [...allClientsForEnrollment];
+        filteredClientsForEnrollment = allClientsForEnrollment.filter(client =>
+          !enrolledClientIds.includes(Number(client.id))
+        );
+
         renderEnrollmentClients(filteredClientsForEnrollment);
-
         modal.classList.remove("hidden");
       } catch (error) {
         console.error("Error cargando alumnos para inscripción:", error);
@@ -806,10 +820,10 @@
 
       if (!clients || clients.length === 0) {
         container.innerHTML = `
-        <div class="p-4 text-sm text-text-main/60 text-center border border-accent-border rounded-lg">
-          No hay alumnos disponibles para inscribir en esta clase
-        </div>
-      `;
+      <div class="p-4 text-sm text-text-main/60 text-center border border-accent-border rounded-lg">
+        No hay alumnos disponibles para inscribir en esta clase
+      </div>
+    `;
         return;
       }
 
@@ -822,23 +836,23 @@
         row.className = "flex items-center justify-between gap-3 p-3 rounded-lg hover:bg-primary/5 transition-all border border-transparent hover:border-primary/10 group";
 
         row.innerHTML = `
-        <div class="flex items-center gap-3 min-w-0">
-          <div class="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold overflow-hidden text-sm shrink-0">
-            ${initials}
-          </div>
-
-          <div class="min-w-0">
-            <p class="font-semibold text-text-main truncate">${fullName}</p>
-            <p class="text-xs text-text-main/50 truncate">${subtitle}</p>
-          </div>
+      <div class="flex items-center gap-3 min-w-0">
+        <div class="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold overflow-hidden text-sm shrink-0">
+          ${initials}
         </div>
 
-        <button
-          class="bg-primary hover:bg-primary/90 text-white px-4 py-1.5 rounded-lg text-sm font-semibold transition-transform active:scale-95 shadow-sm shrink-0"
-          type="button">
-          Inscribir
-        </button>
-      `;
+        <div class="min-w-0">
+          <p class="font-semibold text-text-main truncate">${fullName}</p>
+          <p class="text-xs text-text-main/50 truncate">${subtitle}</p>
+        </div>
+      </div>
+
+      <button
+        class="bg-primary hover:bg-primary/90 text-white px-4 py-1.5 rounded-lg text-sm font-semibold transition-transform active:scale-95 shadow-sm shrink-0"
+        type="button">
+        Inscribir
+      </button>
+    `;
 
         const button = row.querySelector("button");
         button.addEventListener("click", async () => {
