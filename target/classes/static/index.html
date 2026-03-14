@@ -185,7 +185,6 @@
 
       <section class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
 
-        <!-- TOTAL ALUMNOS -->
         <div
           class="bg-white rounded-xl p-8 border border-accent-border shadow-sm flex flex-col justify-between min-h-[180px] relative overflow-hidden">
           <div class="z-10">
@@ -207,7 +206,6 @@
           </div>
         </div>
 
-        <!-- CLASES HOY -->
         <div
           class="bg-white rounded-xl p-8 border border-accent-border shadow-sm flex flex-col justify-between min-h-[180px] relative overflow-hidden">
           <div class="z-10">
@@ -229,7 +227,6 @@
           </div>
         </div>
 
-        <!-- RESERVAS POSIBLES -->
         <div
           class="bg-white rounded-xl p-8 border border-accent-border shadow-sm flex flex-col justify-between min-h-[180px] relative overflow-hidden">
           <div class="z-10">
@@ -257,7 +254,7 @@
 
       </section>
 
-      <section class="bg-white rounded-xl border border-accent-border shadow-sm overflow-hidden">
+      <section class="bg-white rounded-xl border border-accent-border shadow-sm">
         <div class="px-6 py-5 border-b border-accent-border flex justify-between items-center">
           <h3 class="text-text-main text-xl font-bold">Clases</h3>
           <input id="fecha-seleccionada" type="date"
@@ -478,7 +475,7 @@
             </div>
           </td>
 
-          <td class="px-6 py-5 text-right relative">
+          <td class="px-6 py-5 text-right">
             <button
               class="text-text-main/40 hover:text-text-main transition-colors js-menu-trigger"
               data-class-id="${clase.id}"
@@ -488,7 +485,7 @@
             </button>
 
             <div
-              class="js-menu hidden absolute right-6 mt-2 w-48 rounded-lg border border-accent-border bg-white shadow-lg z-20"
+              class="js-menu hidden fixed w-48 rounded-lg border border-accent-border bg-white shadow-lg z-[9999]"
               data-class-id="${clase.id}">
               <button
                 class="js-action-btn w-full text-left px-4 py-3 text-sm hover:bg-slate-50"
@@ -539,7 +536,12 @@
       const actionButtons = document.querySelectorAll(".js-action-btn");
 
       function closeAllMenus() {
-        menus.forEach(menu => menu.classList.add("hidden"));
+        menus.forEach(menu => {
+          menu.classList.add("hidden");
+          menu.style.top = "";
+          menu.style.left = "";
+        });
+
         menuTriggers.forEach(trigger => trigger.setAttribute("aria-expanded", "false"));
       }
 
@@ -555,6 +557,28 @@
           closeAllMenus();
 
           if (isHidden) {
+            const rect = trigger.getBoundingClientRect();
+            const menuWidth = 192;
+            const margin = 8;
+
+            let top = rect.bottom + margin;
+            let left = rect.right - menuWidth;
+
+            if (left < margin) {
+              left = margin;
+            }
+
+            const availableBottom = window.innerHeight - rect.bottom;
+            if (availableBottom < 140) {
+              top = rect.top - 140 - margin;
+            }
+
+            if (top < margin) {
+              top = margin;
+            }
+
+            menu.style.top = `${top}px`;
+            menu.style.left = `${left}px`;
             menu.classList.remove("hidden");
             trigger.setAttribute("aria-expanded", "true");
           }
@@ -566,6 +590,8 @@
       });
 
       document.onclick = () => closeAllMenus();
+      window.onscroll = () => closeAllMenus();
+      window.onresize = () => closeAllMenus();
 
       actionButtons.forEach(button => {
         button.onclick = async () => {
