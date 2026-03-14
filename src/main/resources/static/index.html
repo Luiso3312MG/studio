@@ -11,6 +11,7 @@
         rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
         rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <script>
     let currentUser = null;
@@ -180,8 +181,6 @@
         <h2 class="text-text-main text-4xl font-black leading-tight tracking-tight">Dashboard</h2>
         <p class="text-text-main/60 text-lg font-normal">Resumen operativo del día</p>
       </div>
-
-
     </header>
 
     <section class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
@@ -551,7 +550,12 @@
         const classId = button.dataset.classId;
 
         if (action === "ver-detalle") {
-          alert(`Clase ID: ${classId}`);
+          await Swal.fire({
+            icon: "info",
+            title: "Detalle de clase",
+            text: `Clase ID: ${classId}`,
+            confirmButtonColor: "#0A1128"
+          });
         }
 
         if (action === "inscribir-alumno") {
@@ -559,8 +563,18 @@
         }
 
         if (action === "eliminar-clase") {
-          const confirmar = confirm("¿Seguro que deseas eliminar esta clase?");
-          if (!confirmar) return;
+          const result = await Swal.fire({
+            title: "¿Eliminar clase?",
+            text: "Esta acción no se puede deshacer",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#dc2626",
+            cancelButtonColor: "#6b7280",
+            confirmButtonText: "Eliminar",
+            cancelButtonText: "Cancelar"
+          });
+
+          if (!result.isConfirmed) return;
 
           try {
             const response = await fetch(`/api/classes/${classId}`, {
@@ -571,14 +585,33 @@
             if (!response.ok) {
               const text = await response.text();
               console.error("Error eliminando clase:", response.status, text);
-              alert("No se pudo eliminar la clase");
+
+              await Swal.fire({
+                icon: "error",
+                title: "No se pudo eliminar",
+                text: "No se pudo eliminar la clase",
+                confirmButtonColor: "#dc2626"
+              });
               return;
             }
+
+            await Swal.fire({
+              icon: "success",
+              title: "Clase eliminada",
+              text: "La clase fue eliminada correctamente",
+              confirmButtonColor: "#16a34a"
+            });
 
             await loadClasses();
           } catch (error) {
             console.error("Error eliminando clase:", error);
-            alert("Ocurrió un error al eliminar la clase");
+
+            await Swal.fire({
+              icon: "error",
+              title: "Error",
+              text: "Ocurrió un error al eliminar la clase",
+              confirmButtonColor: "#dc2626"
+            });
           }
         }
 
@@ -644,7 +677,13 @@
       if (!response.ok) {
         const text = await response.text();
         console.error("Error cargando alumnos para inscripción:", response.status, text);
-        alert("No se pudieron cargar los alumnos");
+
+        await Swal.fire({
+          icon: "error",
+          title: "No se pudieron cargar",
+          text: "No se pudieron cargar los alumnos",
+          confirmButtonColor: "#dc2626"
+        });
         return;
       }
 
@@ -660,7 +699,13 @@
       modal.classList.remove("hidden");
     } catch (error) {
       console.error("Error cargando alumnos para inscripción:", error);
-      alert("Ocurrió un error al cargar alumnos");
+
+      await Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Ocurrió un error al cargar alumnos",
+        confirmButtonColor: "#dc2626"
+      });
     }
   }
 
@@ -723,7 +768,12 @@
 
   async function enrollClientInClass(clientId) {
     if (!currentClassIdToEnroll) {
-      alert("No hay clase seleccionada");
+      await Swal.fire({
+        icon: "warning",
+        title: "Clase no seleccionada",
+        text: "No hay clase seleccionada",
+        confirmButtonColor: "#d97706"
+      });
       return;
     }
 
@@ -743,18 +793,36 @@
       if (!response.ok) {
         const text = await response.text();
         console.error("Error inscribiendo alumno:", response.status, text);
-        alert("No se pudo inscribir el alumno");
+
+        await Swal.fire({
+          icon: "error",
+          title: "No se pudo inscribir",
+          text: "No se pudo inscribir el alumno",
+          confirmButtonColor: "#dc2626"
+        });
         return;
       }
 
       await response.json();
 
-      alert("Alumno inscrito correctamente");
+      await Swal.fire({
+        icon: "success",
+        title: "Alumno inscrito",
+        text: "El alumno fue inscrito correctamente",
+        confirmButtonColor: "#16a34a"
+      });
+
       closeEnrollmentModal();
       await loadClasses();
     } catch (error) {
       console.error("Error inscribiendo alumno:", error);
-      alert("Ocurrió un error al inscribir el alumno");
+
+      await Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Ocurrió un error al inscribir el alumno",
+        confirmButtonColor: "#dc2626"
+      });
     }
   }
 
@@ -763,46 +831,33 @@
     if (!btnLogout) return;
 
     btnLogout.addEventListener("click", async () => {
+      const result = await Swal.fire({
+        title: "¿Cerrar sesión?",
+        text: "Tu sesión actual se cerrará",
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonColor: "#0A1128",
+        cancelButtonColor: "#6b7280",
+        confirmButtonText: "Cerrar sesión",
+        cancelButtonText: "Cancelar"
+      });
+
+      if (!result.isConfirmed) return;
+
       try {
-        await fetch("/api/auth/logout", {
+        const response = await fetch("/api/auth/logout", {
           method: "POST",
           credentials: "include"
         });
+
+        console.log("Logout status:", response.status);
       } catch (error) {
-        console.error("Error al cerrar sesión:", error);
+        console.error("Error cerrando sesión:", error);
       }
 
       window.location.href = "/login.html";
     });
   }
-
-  function initLogout() {
-
-  const btnLogout = document.getElementById("btn-logout");
-
-  if (!btnLogout) return;
-
-  btnLogout.addEventListener("click", async () => {
-
-    try {
-
-      const response = await fetch("/api/auth/logout", {
-        method: "POST",
-        credentials: "include"
-      });
-
-      console.log("Logout status:", response.status);
-
-    } catch (error) {
-      console.error("Error cerrando sesión:", error);
-    }
-
-    window.location.href = "/login.html";
-
-  });
-}
-
-
 </script>
 </body>
 
