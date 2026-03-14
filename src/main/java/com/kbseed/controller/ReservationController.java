@@ -5,6 +5,8 @@ import com.kbseed.dto.ReservationDTO;
 import com.kbseed.service.ReservationService;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/classes")
 public class ReservationController {
@@ -13,6 +15,11 @@ public class ReservationController {
 
     public ReservationController(ReservationService reservationService) {
         this.reservationService = reservationService;
+    }
+
+    @GetMapping("/{classId}/reservations")
+    public List<ReservationDTO> obtenerReservasPorClase(@PathVariable Long classId) {
+        return reservationService.obtenerReservasPorClase(classId);
     }
 
     @PostMapping("/{classId}/reservations")

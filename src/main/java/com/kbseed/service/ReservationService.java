@@ -9,7 +9,12 @@ import com.kbseed.repository.ClassRepository;
 import com.kbseed.repository.ClientRepository;
 import com.kbseed.repository.ReservationRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ReservationService {
@@ -32,22 +37,37 @@ public class ReservationService {
     public ReservationDTO inscribirAlumno(Long classId, CreateReservationRequest request) {
 
         ClassEntity classEntity = classRepository.findById(classId)
-                .orElseThrow(() -> new RuntimeException("Clase no encontrada con id: " + classId));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Clase no encontrada con id: " + classId
+                ));
 
         ClientEntity clientEntity = clientRepository.findById(request.getClientId())
-                .orElseThrow(() -> new RuntimeException("Alumno no encontrado con id: " + request.getClientId()));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Alumno no encontrado con id: " + request.getClientId()
+                ));
 
         if (!classEntity.getStudioId().equals(clientEntity.getStudioId())) {
-            throw new RuntimeException("La clase y el alumno no pertenecen al mismo studio");
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "La clase y el alumno no pertenecen al mismo studio"
+            );
         }
 
         boolean yaInscrito = reservationRepository.existsByClassIdAndClientId(classId, request.getClientId());
         if (yaInscrito) {
-            throw new RuntimeException("El alumno ya está inscrito en esta clase");
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "El alumno ya está inscrito en esta clase"
+            );
         }
 
         if (classEntity.getCapacity() == null || classEntity.getCapacity() <= 0) {
-            throw new RuntimeException("La clase ya no tiene cupos disponibles");
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "La clase ya no tiene cupos disponibles"
+            );
         }
 
         ReservationEntity reservation = new ReservationEntity();
@@ -66,10 +86,27 @@ public class ReservationService {
 
         classRepository.save(classEntity);
 
-        return toDTO(savedReservation);
+        return toDTO(savedReservation, clientEntity);
     }
 
-    private ReservationDTO toDTO(ReservationEntity entity) {
+    public List<ReservationDTO> obtenerReservasPorClase(Long classId) {
+        classRepository.findById(classId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Clase no encontrada con id: " + classId
+                ));
+
+        List<ReservationEntity> reservations = reservationRepository.findByClassId(classId);
+
+        return reservations.stream()
+                .map(reservation -> {
+                    ClientEntity client = clientRepository.findById(reservation.getClientId()).orElse(null);
+                    return toDTO(reservation, client);
+                })
+                .collect(Collectors.toList());
+    }
+
+    private ReservationDTO toDTO(ReservationEntity entity, ClientEntity client) {
         ReservationDTO dto = new ReservationDTO();
         dto.setId(entity.getId());
         dto.setStudioId(entity.getStudioId());
@@ -80,6 +117,14 @@ public class ReservationService {
         dto.setCheckedInAt(entity.getCheckedInAt());
         dto.setCancellationAt(entity.getCancellationAt());
         dto.setNotes(entity.getNotes());
+
+        if (client != null) {
+            dto.setClientFirstName(client.getFirstName());
+            dto.setClientLastName(client.getLastName());
+            dto.setClientEmail(client.getEmail());
+            dto.setClientPhone(client.getPhone());
+        }
+
         return dto;
     }
 }

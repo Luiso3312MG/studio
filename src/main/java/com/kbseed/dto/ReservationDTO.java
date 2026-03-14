@@ -14,6 +14,11 @@ public class ReservationDTO {
     private LocalDateTime cancellationAt;
     private String notes;
 
+    private String clientFirstName;
+    private String clientLastName;
+    private String clientEmail;
+    private String clientPhone;
+
     public Long getId() {
         return id;
     }
@@ -84,5 +89,37 @@ public class ReservationDTO {
 
     public void setNotes(String notes) {
         this.notes = notes;
+    }
+
+    public String getClientFirstName() {
+        return clientFirstName;
+    }
+
+    public void setClientFirstName(String clientFirstName) {
+        this.clientFirstName = clientFirstName;
+    }
+
+    public String getClientLastName() {
+        return clientLastName;
+    }
+
+    public void setClientLastName(String clientLastName) {
+        this.clientLastName = clientLastName;
+    }
+
+    public String getClientEmail() {
+        return clientEmail;
+    }
+
+    public void setClientEmail(String clientEmail) {
+        this.clientEmail = clientEmail;
+    }
+
+    public String getClientPhone() {
+        return clientPhone;
+    }
+
+    public void setClientPhone(String clientPhone) {
+        this.clientPhone = clientPhone;
     }
 }
