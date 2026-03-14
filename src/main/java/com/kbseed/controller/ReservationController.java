@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/classes")
+@RequestMapping("/api/reservations")
 public class ReservationController {
 
     private final ReservationService reservationService;
@@ -17,12 +17,12 @@ public class ReservationController {
         this.reservationService = reservationService;
     }
 
-    @GetMapping("/{classId}/reservations")
+    @GetMapping("/class/{classId}")
     public List<ReservationDTO> obtenerReservasPorClase(@PathVariable Long classId) {
         return reservationService.obtenerReservasPorClase(classId);
     }
 
-    @PostMapping("/{classId}/reservations")
+    @PostMapping("/class/{classId}")
     public ReservationDTO inscribirAlumno(
             @PathVariable Long classId,
             @RequestBody CreateReservationRequest request

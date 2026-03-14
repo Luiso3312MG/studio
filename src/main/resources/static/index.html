@@ -524,7 +524,8 @@
     await ensureStudioClientsLoaded();
 
     try {
-      const response = await fetch(`/api/classes/${classId}/reservations`, {
+      // Updated to new reservations endpoint under /api/reservations
+      const response = await fetch(`/api/reservations/class/${classId}`, {
         credentials: "include"
       });
 
@@ -1095,7 +1096,8 @@
     }
 
     try {
-      const response = await fetch(`/api/classes/${currentClassIdToEnroll}/reservations`, {
+      // Updated to new reservations endpoint under /api/reservations
+      const response = await fetch(`/api/reservations/class/${currentClassIdToEnroll}`, {
         method: "POST",
         credentials: "include",
         headers: {
