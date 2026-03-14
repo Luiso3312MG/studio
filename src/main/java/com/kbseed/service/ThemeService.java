@@ -23,13 +23,12 @@ public class ThemeService {
     }
 
     public ThemeDTO obtenerPorStudioId(Long studioId) {
-        ThemeEntity entity = themeRepository.findAll()
-                .stream()
-                .filter(t -> studioId.equals(t.getStudioId()))
-                .findFirst()
-                .orElse(null);
-        return entity != null ? toDTO(entity) : null;
-    }
+    ThemeEntity entity = themeRepository.findByStudioId(studioId)
+            .orElse(null);
+
+    return entity != null ? toDTO(entity) : null;
+}
+
 
     private ThemeDTO toDTO(ThemeEntity entity) {
         ThemeDTO dto = new ThemeDTO();

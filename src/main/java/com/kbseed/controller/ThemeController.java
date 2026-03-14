@@ -2,28 +2,30 @@ package com.kbseed.controller;
 
 import com.kbseed.dto.ThemeDTO;
 import com.kbseed.service.ThemeService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import java.util.List;
+import jakarta.servlet.http.HttpSession;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/themes")
 public class ThemeController {
+
     private final ThemeService themeService;
+    private final HttpSession session;
 
-    public ThemeController(ThemeService themeService) {
+    public ThemeController(ThemeService themeService, HttpSession session) {
         this.themeService = themeService;
+        this.session = session;
     }
 
-    @GetMapping
-    public List<ThemeDTO> obtenerTodos() {
-        return themeService.obtenerTodos();
-    }
+    @GetMapping("/current")
+    public ThemeDTO obtenerTemaActual() {
 
-    @GetMapping("/{studioId}")
-    public ThemeDTO obtenerPorStudioId(@PathVariable Long studioId) {
+        Long studioId = (Long) session.getAttribute("STUDIO_ID");
+
+        if (studioId == null) {
+            throw new RuntimeException("Usuario no autenticado");
+        }
+
         return themeService.obtenerPorStudioId(studioId);
     }
 }
