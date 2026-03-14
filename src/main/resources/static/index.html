@@ -784,10 +784,6 @@
 
   btnLogout.addEventListener("click", async () => {
 
-    const confirmar = confirm("¿Deseas cerrar sesión?");
-
-    if (!confirmar) return;
-
     try {
 
       const response = await fetch("/api/auth/logout", {
