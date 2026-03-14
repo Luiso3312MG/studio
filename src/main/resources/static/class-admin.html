@@ -45,15 +45,12 @@
 
     function applyTheme(theme) {
       const root = document.documentElement;
-      if (theme.backgroundColor) root.style.setProperty('--theme-background', theme.backgroundColor);
-      if (theme.primaryColor) root.style.setProperty('--theme-primary', theme.primaryColor);
-      if (theme.secondaryColor) root.style.setProperty('--theme-secondary', theme.secondaryColor);
-      document.querySelectorAll('.sidebar-item-active').forEach(el => {
-        el.style.backgroundColor = theme.primaryColor || '#111111';
-        el.style.color = '#ffffff';
-      });
-      const badge = document.getElementById('brand-badge');
-      if (badge) badge.style.backgroundColor = theme.primaryColor || '#111111';
+      const themeConfig = theme || {};
+      root.style.setProperty('--theme-background', themeConfig.backgroundColor || '#F5E9E7');
+      root.style.setProperty('--theme-primary', themeConfig.primaryColor || '#111111');
+      root.style.setProperty('--theme-secondary', themeConfig.secondaryColor || '#ffffff');
+      root.style.setProperty('--theme-text', '#0f172a');
+      root.style.setProperty('--theme-border', 'rgba(15, 23, 42, 0.08)');
     }
 
     async function cargarTema() {
@@ -126,28 +123,31 @@
     }
   </script>
 
-  <script>
-    const themeColors = {
-      background_color: "#F4827C",
-      background_light: "#F5E9E7",
-      background_dark: "#2B2B2B",
-      line_color: "#D6C3A5",
-      text_color: "#2B2B2B"
-    };
 
+
+  <script>
     tailwind.config = {
       darkMode: "class",
       theme: {
         extend: {
           colors: {
-            primary: themeColors.background_color,
-            accent: "#E7C7C2",
-            premium: "#D6C3A5",
-            "background-light": themeColors.background_light,
-            "background-dark": themeColors.background_dark,
-            "accent-border": themeColors.line_color,
-            "text-main": themeColors.text_color,
-            "text-sub": "#6D6766"
+            primary: 'var(--theme-primary)',
+            accent: '#E7C7C2',
+            premium: '#D6C3A5',
+            'background-light': 'var(--theme-background)',
+            'background-dark': '#221110',
+            'accent-border': 'var(--theme-border)',
+            'text-main': 'var(--theme-text)',
+            'text-sub': '#6D6766'
+          },
+          fontFamily: {
+            display: ["Manrope", "sans-serif"]
+          },
+          borderRadius: {
+            DEFAULT: "0.25rem",
+            lg: "0.5rem",
+            xl: "0.75rem",
+            full: "9999px"
           }
         }
       }
@@ -159,8 +159,8 @@
       --theme-background: #F5E9E7;
       --theme-primary: #111111;
       --theme-secondary: #ffffff;
-      --theme-text: #2B2B2B;
-      --theme-border: #D6C3A5;
+      --theme-text: #0f172a;
+      --theme-border: rgba(15, 23, 42, 0.08);
     }
     body {
       font-family: 'Manrope', sans-serif;
@@ -168,9 +168,17 @@
       color: var(--theme-text);
     }
     .theme-primary-bg { background-color: var(--theme-primary) !important; color: #fff !important; }
-    .sidebar-item-active {
-      background-color: var(--theme-primary);
-      color: white;
+    .theme-secondary-bg { background-color: var(--theme-secondary) !important; }
+    .theme-border { border-color: var(--theme-border) !important; }
+    .tab-btn-active {
+      background-color: var(--theme-primary) !important;
+      color: #ffffff !important;
+      border-color: var(--theme-primary) !important;
+    }
+    .tab-btn-inactive {
+      background-color: var(--theme-secondary) !important;
+      color: var(--theme-text) !important;
+      border: 1px solid var(--theme-border) !important;
     }
     .logout-pill {
       width: 100%;
@@ -185,13 +193,13 @@
   </style>
 </head>
 
-<body class="bg-background-light text-text-main">
+<body>
   <div class="flex h-screen overflow-hidden">
 
     <!-- Sidebar -->
-    <aside class="w-64 flex flex-col border-r border-accent-border bg-background-light px-4 py-6">
+    <aside class="w-64 flex flex-col border-r theme-border bg-white/75 px-4 py-6 backdrop-blur">
       <div class="flex items-center gap-3 px-2 mb-10">
-        <div id="brand-badge" class="size-10 rounded-full bg-primary flex items-center justify-center text-white">
+        <div id="brand-badge" class="size-10 rounded-full theme-primary-bg flex items-center justify-center">
           <span class="material-symbols-outlined">tune</span>
         </div>
         <div class="flex flex-col">
@@ -241,10 +249,10 @@
 
       <!-- Tabs -->
       <div class="flex gap-3 mb-8">
-        <button class="tab-btn px-4 py-2 rounded-lg bg-black text-white font-bold" data-tab="rooms">Salones</button>
-        <button class="tab-btn px-4 py-2 rounded-lg bg-white border border-accent-border font-bold"
+        <button class="tab-btn tab-btn-active px-4 py-2 rounded-lg font-bold" data-tab="rooms">Salones</button>
+        <button class="tab-btn tab-btn-inactive px-4 py-2 rounded-lg font-bold"
           data-tab="types">Tipos de clase</button>
-        <button class="tab-btn px-4 py-2 rounded-lg bg-white border border-accent-border font-bold"
+        <button class="tab-btn tab-btn-inactive px-4 py-2 rounded-lg font-bold"
           data-tab="schedule">Programar clases</button>
       </div>
 
@@ -552,12 +560,12 @@
       buttons.forEach(btn => {
         btn.addEventListener("click", () => {
           buttons.forEach(b => {
-            b.classList.remove("bg-black", "text-white");
-            b.classList.add("bg-white", "border", "border-accent-border");
+            b.classList.remove("tab-btn-active");
+            b.classList.add("tab-btn-inactive");
           });
 
-          btn.classList.remove("bg-white", "border", "border-accent-border");
-          btn.classList.add("bg-black", "text-white");
+          btn.classList.remove("tab-btn-inactive");
+          btn.classList.add("tab-btn-active");
 
           const tab = btn.dataset.tab;
           sections.forEach(section => section.classList.add("hidden"));

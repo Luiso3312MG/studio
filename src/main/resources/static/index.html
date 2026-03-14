@@ -42,13 +42,13 @@
     }
 
     function applyTheme(theme) {
-      if (!theme) return;
-      if (theme.backgroundColor) document.documentElement.style.setProperty('--theme-background', theme.backgroundColor);
-      if (theme.primaryColor) {
-        document.documentElement.style.setProperty('--primary', theme.primaryColor);
-        const badge = document.getElementById('brand-badge');
-        if (badge) badge.style.backgroundColor = theme.primaryColor;
-      }
+      const root = document.documentElement;
+      const themeConfig = theme || {};
+      root.style.setProperty('--theme-background', themeConfig.backgroundColor || '#F5E9E7');
+      root.style.setProperty('--theme-primary', themeConfig.primaryColor || '#111111');
+      root.style.setProperty('--theme-secondary', themeConfig.secondaryColor || '#ffffff');
+      root.style.setProperty('--theme-text', '#0f172a');
+      root.style.setProperty('--theme-border', 'rgba(15, 23, 42, 0.08)');
     }
 
     async function cargarTema() {
@@ -106,27 +106,31 @@
     }
   </script>
 
-  <script>
-    const themeColors = {
-      background_color: "#F4827C",
-      background_light: "#F5E9E7",
-      background_dark: "#2B2B2B",
-      line_color: "#D6C3A5",
-      text_color: "#2B2B2B"
-    };
 
+
+  <script>
     tailwind.config = {
       darkMode: "class",
       theme: {
         extend: {
           colors: {
-            primary: themeColors.background_color,
-            accent: "#E7C7C2",
-            premium: "#D6C3A5",
-            "background-light": themeColors.background_light,
-            "background-dark": themeColors.background_dark,
-            "accent-border": themeColors.line_color,
-            "text-main": themeColors.text_color
+            primary: 'var(--theme-primary)',
+            accent: '#E7C7C2',
+            premium: '#D6C3A5',
+            'background-light': 'var(--theme-background)',
+            'background-dark': '#221110',
+            'accent-border': 'var(--theme-border)',
+            'text-main': 'var(--theme-text)',
+            'text-sub': '#6D6766'
+          },
+          fontFamily: {
+            display: ["Manrope", "sans-serif"]
+          },
+          borderRadius: {
+            DEFAULT: "0.25rem",
+            lg: "0.5rem",
+            xl: "0.75rem",
+            full: "9999px"
           }
         }
       }
@@ -135,18 +139,21 @@
 
   <style>
     :root {
-      --text: #000000;
-      --primary: #111111;
       --theme-background: #F5E9E7;
+      --theme-primary: #111111;
       --theme-secondary: #ffffff;
+      --theme-text: #0f172a;
+      --theme-border: rgba(15, 23, 42, 0.08);
     }
 
     body {
       font-family: 'Manrope', sans-serif;
-      color: var(--text);
+      color: var(--theme-text);
       background-color: var(--theme-background);
     }
     .theme-primary-bg { background-color: var(--theme-primary) !important; color: #fff !important; }
+    .theme-secondary-bg { background-color: var(--theme-secondary) !important; }
+    .theme-border { border-color: var(--theme-border) !important; }
     .logout-pill {
       width: 100%;
       padding: 0.75rem 1rem;
@@ -159,7 +166,7 @@
     }
 
     .sidebar-item-active {
-      background-color: var(--primary);
+      background-color: var(--theme-primary);
     }
 
     .rotate-180 {
@@ -168,12 +175,12 @@
   </style>
 </head>
 
-<body class="bg-background-light dark:bg-background-dark text-text-main">
+<body>
 <div class="flex h-screen overflow-hidden">
 
-  <aside class="w-64 border-r border-accent/30 bg-background-light/50 dark:bg-background-dark/50 flex flex-col">
+  <aside class="w-64 border-r theme-border bg-white/75 flex flex-col backdrop-blur">
     <div class="p-6 flex items-center gap-3">
-      <div id="brand-badge" class="size-10 rounded-full bg-primary flex items-center justify-center text-white">
+      <div id="brand-badge" class="size-10 rounded-full theme-primary-bg flex items-center justify-center">
         <span class="material-symbols-outlined">auto_awesome</span>
       </div>
       <div>
@@ -214,7 +221,7 @@
     </div>
   </aside>
 
-  <main class="flex-1 overflow-y-auto bg-background-light p-8">
+  <main class="flex-1 overflow-y-auto p-8">
     <header class="mb-8 flex justify-between items-end">
       <div>
         <h2 class="text-text-main text-4xl font-black leading-tight tracking-tight">Dashboard</h2>
