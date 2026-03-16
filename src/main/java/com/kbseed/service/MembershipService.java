@@ -133,6 +133,7 @@ public class MembershipService {
         payment.setClientMembershipId(membership.getId());
         payment.setAmount(request.getAmount());
         payment.setPaymentMethod(request.getPaymentMethod() == null || request.getPaymentMethod().isBlank() ? "EFECTIVO" : request.getPaymentMethod());
+        payment.setPaymentType("MEMBRESIA");
         payment.setPaymentDate(LocalDate.now());
         payment.setReference(request.getReference());
         payment.setNotes(request.getNotes());
