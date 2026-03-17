@@ -22,16 +22,12 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/",
                                 "/login.html",
-                                "/index.html",
-                                "/students.html",
-                                "/class-admin.html",
-                                "/memberships.html",
                                 "/favicon.ico",
                                 "/css/**",
                                 "/js/**",
                                 "/images/**"
                         ).permitAll()
-                        .requestMatchers("/api/auth/login", "/api/auth/logout", "/api/auth/ping").permitAll()
+                        .requestMatchers("/api/auth/login", "/api/auth/ping").permitAll()
                         .anyRequest().authenticated())
                 .formLogin(form -> form.disable())
                 .httpBasic(basic -> basic.disable());

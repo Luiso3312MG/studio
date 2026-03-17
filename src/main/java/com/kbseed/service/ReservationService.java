@@ -2,25 +2,18 @@ package com.kbseed.service;
 
 import com.kbseed.dto.CreateReservationRequest;
 import com.kbseed.dto.ReservationDTO;
-import com.kbseed.entity.ClassEntity;
-import com.kbseed.entity.ClassTypeEntity;
-import com.kbseed.entity.ClientEntity;
-import com.kbseed.entity.ClientMembershipEntity;
-import com.kbseed.entity.ReservationEntity;
+import com.kbseed.entity.*;
 import com.kbseed.repository.ClassRepository;
 import com.kbseed.repository.ClassTypeRepository;
 import com.kbseed.repository.ClientRepository;
 import com.kbseed.repository.ReservationRepository;
-import com.kbseed.support.SessionContext;
 import jakarta.transaction.Transactional;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -35,7 +28,7 @@ public class ReservationService {
     private final ClassTypeRepository classTypeRepository;
     private final MembershipService membershipService;
     private final AppSettingService appSettingService;
-    private final SessionContext sessionContext;
+    private final com.kbseed.support.SessionContext sessionContext;
 
     public ReservationService(ReservationRepository reservationRepository,
                               ClassRepository classRepository,
@@ -43,7 +36,7 @@ public class ReservationService {
                               ClassTypeRepository classTypeRepository,
                               MembershipService membershipService,
                               AppSettingService appSettingService,
-                              SessionContext sessionContext) {
+                              com.kbseed.support.SessionContext sessionContext) {
         this.reservationRepository = reservationRepository;
         this.classRepository = classRepository;
         this.clientRepository = clientRepository;
@@ -56,10 +49,20 @@ public class ReservationService {
     @Transactional
     public ReservationDTO inscribirAlumno(Long classId, CreateReservationRequest request) {
         Long studioId = sessionContext.requireStudioId();
-        ClassEntity classEntity = requireClassFromStudio(classId, studioId);
-        ClientEntity clientEntity = requireClientFromStudio(request.getClientId(), studioId);
+        ClassEntity classEntity = classRepository.findById(classId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Clase no encontrada con id: " + classId));
+        ClientEntity clientEntity = clientRepository.findById(request.getClientId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Alumno no encontrado con id: " + request.getClientId()));
 
-        ClassTypeEntity classType = classTypeRepository.findByStudioIdAndName(studioId, classEntity.getClassTypeName())
+        if (!Objects.equals(classEntity.getStudioId(), studioId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No puedes operar clases de otro studio");
+        }
+
+        if (!classEntity.getStudioId().equals(clientEntity.getStudioId())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La clase y el alumno no pertenecen al mismo studio");
+        }
+
+        ClassTypeEntity classType = classTypeRepository.findByStudioIdAndName(classEntity.getStudioId(), classEntity.getClassTypeName())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Tipo de clase no encontrado"));
 
         LocalDateTime classStart = LocalDateTime.of(classEntity.getClassDate(), classEntity.getStartTime());
@@ -67,7 +70,7 @@ public class ReservationService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "No se puede inscribir en clases anteriores o que ya iniciaron");
         }
 
-        ClientMembershipEntity membership = membershipService.requireActiveMembership(clientEntity.getId(), studioId);
+        ClientMembershipEntity membership = membershipService.requireActiveMembership(clientEntity.getId(), classEntity.getStudioId());
         if (classEntity.getClassDate().isBefore(membership.getStartDate()) || classEntity.getClassDate().isAfter(membership.getEndDate())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "La clase está fuera de la vigencia de la membresía activa");
         }
@@ -82,41 +85,43 @@ public class ReservationService {
 
         validateMembershipRules(clientEntity, classEntity, classType, membership);
 
-        int updatedRows = classRepository.decrementCapacityIfAvailable(classEntity.getId(), studioId);
-        if (updatedRows == 0) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "La clase ya no tiene cupos disponibles");
-        }
-
         ReservationEntity reservation = new ReservationEntity();
-        reservation.setStudioId(studioId);
+        reservation.setStudioId(classEntity.getStudioId());
         reservation.setClassId(classEntity.getId());
         reservation.setClientId(clientEntity.getId());
         reservation.setReservationStatus("RESERVADO");
         reservation.setNotes(request.getNotes());
 
         ReservationEntity savedReservation = reservationRepository.save(reservation);
+        classEntity.setCapacity(classEntity.getCapacity() - 1);
+        if (classEntity.getCapacity() <= 0) classEntity.setStatus("LLENA");
+        classRepository.save(classEntity);
         return toDTO(savedReservation, clientEntity);
     }
 
     public List<ReservationDTO> obtenerReservasPorClase(Long classId) {
         Long studioId = sessionContext.requireStudioId();
-        requireClassFromStudio(classId, studioId);
-        return reservationRepository.findByClassId(classId).stream()
-                .filter(reservation -> studioId.equals(reservation.getStudioId()))
-                .map(reservation -> {
-                    ClientEntity client = clientRepository.findById(reservation.getClientId())
-                            .filter(item -> studioId.equals(item.getStudioId()))
-                            .orElse(null);
-                    return toDTO(reservation, client);
-                })
-                .collect(Collectors.toList());
+        ClassEntity classEntity = classRepository.findById(classId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Clase no encontrada con id: " + classId));
+        if (!Objects.equals(classEntity.getStudioId(), studioId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No puedes ver reservas de otro studio");
+        }
+        return reservationRepository.findByClassId(classId).stream().map(reservation -> {
+            ClientEntity client = clientRepository.findById(reservation.getClientId()).orElse(null);
+            return toDTO(reservation, client);
+        }).collect(Collectors.toList());
     }
 
     @Transactional
     public ReservationDTO cancelarReserva(Long reservationId, String notes) {
         Long studioId = sessionContext.requireStudioId();
-        ReservationEntity reservation = requireReservationFromStudio(reservationId, studioId);
-        ClassEntity classEntity = requireClassFromStudio(reservation.getClassId(), studioId);
+        ReservationEntity reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Reserva no encontrada"));
+        ClassEntity classEntity = classRepository.findById(reservation.getClassId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Clase no encontrada"));
+        if (!Objects.equals(classEntity.getStudioId(), studioId) || !Objects.equals(reservation.getStudioId(), studioId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No puedes cancelar reservas de otro studio");
+        }
         if (!"RESERVADO".equals(reservation.getReservationStatus())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Solo se pueden cancelar reservas activas");
         }
@@ -133,16 +138,24 @@ public class ReservationService {
         if (notes != null && !notes.isBlank()) reservation.setNotes(notes);
         reservation = reservationRepository.save(reservation);
 
-        classRepository.incrementCapacityIfBelowTotal(classEntity.getId(), studioId);
+        classEntity.setCapacity(Math.min(
+                Optional.ofNullable(classEntity.getCapacityTotal()).orElse(classEntity.getCapacity() + 1),
+                Optional.ofNullable(classEntity.getCapacity()).orElse(0) + 1));
+        classEntity.setStatus("DISPONIBLE");
+        classRepository.save(classEntity);
 
-        ClientEntity client = requireClientFromStudio(reservation.getClientId(), studioId);
+        ClientEntity client = clientRepository.findById(reservation.getClientId()).orElse(null);
         return toDTO(reservation, client);
     }
 
     @Transactional
     public ReservationDTO checkInReserva(Long reservationId, String notes) {
         Long studioId = sessionContext.requireStudioId();
-        ReservationEntity reservation = requireReservationFromStudio(reservationId, studioId);
+        ReservationEntity reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Reserva no encontrada"));
+        if (!Objects.equals(reservation.getStudioId(), studioId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No puedes operar reservas de otro studio");
+        }
         if (!"RESERVADO".equals(reservation.getReservationStatus())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Solo se pueden hacer check-in a reservas activas");
         }
@@ -150,40 +163,26 @@ public class ReservationService {
         reservation.setCheckedInAt(LocalDateTime.now());
         if (notes != null && !notes.isBlank()) reservation.setNotes(notes);
         reservation = reservationRepository.save(reservation);
-        ClientEntity client = requireClientFromStudio(reservation.getClientId(), studioId);
+        ClientEntity client = clientRepository.findById(reservation.getClientId()).orElse(null);
         return toDTO(reservation, client);
     }
 
     @Transactional
     public ReservationDTO marcarNoAsistio(Long reservationId, String notes) {
         Long studioId = sessionContext.requireStudioId();
-        ReservationEntity reservation = requireReservationFromStudio(reservationId, studioId);
+        ReservationEntity reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Reserva no encontrada"));
+        if (!Objects.equals(reservation.getStudioId(), studioId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No puedes operar reservas de otro studio");
+        }
         if (!"RESERVADO".equals(reservation.getReservationStatus())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Solo se pueden marcar reservas activas");
         }
         reservation.setReservationStatus("NO_ASISTIO");
         if (notes != null && !notes.isBlank()) reservation.setNotes(notes);
         reservation = reservationRepository.save(reservation);
-        ClientEntity client = requireClientFromStudio(reservation.getClientId(), studioId);
+        ClientEntity client = clientRepository.findById(reservation.getClientId()).orElse(null);
         return toDTO(reservation, client);
-    }
-
-    private ClassEntity requireClassFromStudio(Long classId, Long studioId) {
-        return classRepository.findById(classId)
-                .filter(item -> studioId.equals(item.getStudioId()))
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Clase no encontrada con id: " + classId));
-    }
-
-    private ClientEntity requireClientFromStudio(Long clientId, Long studioId) {
-        return clientRepository.findById(clientId)
-                .filter(item -> studioId.equals(item.getStudioId()))
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Alumno no encontrado con id: " + clientId));
-    }
-
-    private ReservationEntity requireReservationFromStudio(Long reservationId, Long studioId) {
-        return reservationRepository.findById(reservationId)
-                .filter(item -> studioId.equals(item.getStudioId()))
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Reserva no encontrada"));
     }
 
     private void validateMembershipRules(ClientEntity clientEntity,

@@ -3,10 +3,8 @@ package com.kbseed.service;
 import com.kbseed.dto.AuthRequest;
 import com.kbseed.dto.AuthResponse;
 import com.kbseed.dto.MeResponse;
-import com.kbseed.entity.RoleEntity;
 import com.kbseed.entity.StudioEntity;
 import com.kbseed.entity.UserEntity;
-import com.kbseed.repository.RoleRepository;
 import com.kbseed.repository.StudioRepository;
 import com.kbseed.repository.UserRepository;
 import com.kbseed.support.SessionContext;
@@ -24,20 +22,13 @@ public class AuthService {
     private final HttpSession session;
     private final SessionContext sessionContext;
     private final StudioRepository studioRepository;
-    private final RoleRepository roleRepository;
 
-    public AuthService(UserRepository userRepository,
-                       PasswordEncoder passwordEncoder,
-                       HttpSession session,
-                       SessionContext sessionContext,
-                       StudioRepository studioRepository,
-                       RoleRepository roleRepository) {
+    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, HttpSession session, SessionContext sessionContext, StudioRepository studioRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.session = session;
         this.sessionContext = sessionContext;
         this.studioRepository = studioRepository;
-        this.roleRepository = roleRepository;
     }
 
     public AuthResponse login(AuthRequest request) {
@@ -72,7 +63,6 @@ public class AuthService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
 
         StudioEntity studio = user.getStudioId() != null ? studioRepository.findById(user.getStudioId()).orElse(null) : null;
-        RoleEntity role = user.getRoleId() != null ? roleRepository.findById(user.getRoleId()).orElse(null) : null;
 
         MeResponse response = new MeResponse();
         response.setId(user.getId());
@@ -80,11 +70,23 @@ public class AuthService {
         response.setStudioName(studio != null ? studio.getName() : "Studio Admin");
         response.setUsername(user.getEmail());
         response.setFullName(user.getFullName());
-        response.setRole(role != null && role.getCode() != null ? role.getCode() : "ADMIN");
+        response.setRole(resolveRole(user.getRoleId()));
         return response;
     }
 
     public void logout() {
         session.invalidate();
+    }
+
+    private String resolveRole(Long roleId) {
+        if (roleId == null) {
+            return "ADMIN";
+        }
+        return switch (roleId.intValue()) {
+            case 1 -> "ADMIN";
+            case 2 -> "COACH";
+            case 3 -> "RECEPCION";
+            default -> roleId.toString();
+        };
     }
 }
