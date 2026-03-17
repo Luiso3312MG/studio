@@ -71,6 +71,7 @@ public class AuthService {
         response.setUsername(user.getEmail());
         response.setFullName(user.getFullName());
         response.setRole(resolveRole(user.getRoleId()));
+        response.setEmail(user.getEmail());
         return response;
     }
 
