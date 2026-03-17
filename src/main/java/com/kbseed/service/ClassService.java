@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -174,7 +175,7 @@ public class ClassService {
         if (entity.getClassDate() == null || entity.getStartTime() == null || entity.getEndTime() == null) {
             return entity.getStatus();
         }
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now(ZoneId.of("America/Mexico_City"));
         LocalDateTime start = LocalDateTime.of(entity.getClassDate(), entity.getStartTime());
         LocalDateTime end = LocalDateTime.of(entity.getClassDate(), entity.getEndTime());
         if (end.isBefore(now)) {

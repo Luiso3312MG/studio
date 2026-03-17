@@ -12,6 +12,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 
@@ -67,8 +68,9 @@ public class PaymentService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Clase no encontrada"));
 
         // Verificar que la clase no haya finalizado
+        ZoneId zonaEstudio = ZoneId.of("America/Mexico_City");
         LocalDateTime classEnd = LocalDateTime.of(classEntity.getClassDate(), classEntity.getEndTime());
-        if (classEnd.isBefore(LocalDateTime.now()))
+        if (classEnd.isBefore(LocalDateTime.now(zonaEstudio)))
             throw new ResponseStatusException(HttpStatus.CONFLICT, "No se puede registrar drop-in en una clase ya finalizada");
 
         // Verificar que haya cupo disponible
@@ -92,7 +94,7 @@ public class PaymentService {
         payment.setPaymentMethod(
                 request.getPaymentMethod() == null || request.getPaymentMethod().isBlank()
                         ? "EFECTIVO" : request.getPaymentMethod());
-        payment.setPaymentDate(LocalDate.now());
+        payment.setPaymentDate(LocalDate.now(ZoneId.of("America/Mexico_City")));
         payment.setReference(request.getReference());
         payment.setNotes(request.getNotes());
         payment = paymentRepository.save(payment);

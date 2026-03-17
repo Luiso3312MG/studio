@@ -11,6 +11,7 @@ import com.kbseed.support.SessionContext;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 
 @Service
@@ -94,7 +95,7 @@ public class ClientService {
 
         ClientMembershipEntity membership = clientMembershipRepository.findTopByClientIdOrderByEndDateDesc(entity.getId()).orElse(null);
         if (membership != null) {
-            dto.setMembershipStatus(membership.getEndDate().isBefore(LocalDate.now()) ? "VENCIDA" : membership.getStatus());
+            dto.setMembershipStatus(membership.getEndDate().isBefore(LocalDate.now(ZoneId.of("America/Mexico_City"))) ? "VENCIDA" : membership.getStatus());
             dto.setMembershipEndDate(membership.getEndDate());
             MembershipPlanEntity plan = membershipPlanRepository.findById(membership.getMembershipPlanId()).orElse(null);
             dto.setMembershipPlanName(plan != null ? plan.getName() : null);
