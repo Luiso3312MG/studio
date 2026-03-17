@@ -8,6 +8,8 @@ public class ReservationDTO {
     private Long studioId;
     private Long classId;
     private Long clientId;
+    private String accessType;
+    private Long paymentId;
     private String reservationStatus;
     private LocalDateTime bookedAt;
     private LocalDateTime checkedInAt;
@@ -49,6 +51,22 @@ public class ReservationDTO {
 
     public void setClientId(Long clientId) {
         this.clientId = clientId;
+    }
+
+    public String getAccessType() {
+        return accessType;
+    }
+
+    public void setAccessType(String accessType) {
+        this.accessType = accessType;
+    }
+
+    public Long getPaymentId() {
+        return paymentId;
+    }
+
+    public void setPaymentId(Long paymentId) {
+        this.paymentId = paymentId;
     }
 
     public String getReservationStatus() {

@@ -20,6 +20,12 @@ public class ReservationEntity {
     @Column(name = "client_id", nullable = false)
     private Long clientId;
 
+    @Column(name = "access_type", nullable = false)
+    private String accessType;
+
+    @Column(name = "payment_id")
+    private Long paymentId;
+
     @Column(name = "reservation_status", nullable = false)
     private String reservationStatus;
 
@@ -65,6 +71,22 @@ public class ReservationEntity {
 
     public void setClientId(Long clientId) {
         this.clientId = clientId;
+    }
+
+    public String getAccessType() {
+        return accessType;
+    }
+
+    public void setAccessType(String accessType) {
+        this.accessType = accessType;
+    }
+
+    public Long getPaymentId() {
+        return paymentId;
+    }
+
+    public void setPaymentId(Long paymentId) {
+        this.paymentId = paymentId;
     }
 
     public String getReservationStatus() {
