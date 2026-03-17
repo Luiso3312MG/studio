@@ -185,7 +185,7 @@
       </div>
       <div>
         <h1 class="text-lg font-bold leading-tight tracking-tight" id="studio-admin-name">Studio Admin</h1>
-        <p class="text-xs text-text-sub uppercase tracking-widest font-semibold">Premium Management</p>
+        <p class="text-xs text-text-sub uppercase tracking-widest font-semibold">Gestión Premium</p>
       </div>
     </div>
 
@@ -193,7 +193,7 @@
       <a class="flex items-center gap-3 px-4 py-3 theme-primary-bg text-text-main rounded-xl shadow-sm transition-all duration-200"
          href="/index.html">
         <span class="material-symbols-outlined">dashboard</span>
-        <span class="font-medium">Dashboard</span>
+        <span class="font-medium">Inicio</span>
       </a>
 
       <a class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-black/5"
@@ -227,7 +227,7 @@
   <main class="flex-1 overflow-y-auto p-8">
     <header class="mb-8 flex justify-between items-end">
       <div>
-        <h2 class="text-text-main text-4xl font-black leading-tight tracking-tight">Dashboard</h2>
+        <h2 class="text-text-main text-4xl font-black leading-tight tracking-tight">Inicio</h2>
         <p class="text-text-main/60 text-lg font-normal">Resumen operativo del día</p>
       </div>
     </header>
@@ -667,7 +667,7 @@
           </div>
 
           <div class="text-xs font-medium text-text-main/50 shrink-0">
-            ${reservation.reservationStatus || reservation.status || "INSCRITO"}
+            ${({'RESERVADO':'Reservado','ASISTIO':'Asistió','NO_ASISTIO':'No asistió','CANCELADO':'Cancelado'}[reservation.reservationStatus || reservation.status] || 'Inscrito')}
           </div>
         </div>
       `;

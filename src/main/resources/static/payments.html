@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>Pagos — Studio Admin</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <script>
+    let currentUser = null;
+    let studioId = null;
+
+    async function validarSesion() {
+      try {
+        const res = await fetch("/api/auth/me", { method: "GET", credentials: "include" });
+        if (!res.ok) { window.location.href = "/login.html"; return null; }
+        return await res.json();
+      } catch { window.location.href = "/login.html"; return null; }
+    }
+
+    function applyTheme(theme) {
+      const r = document.documentElement;
+      r.style.setProperty('--theme-background', theme?.backgroundColor || '#F5E9E7');
+      r.style.setProperty('--theme-primary', theme?.primaryColor || '#111111');
+      r.style.setProperty('--theme-secondary', theme?.secondaryColor || '#ffffff');
+      r.style.setProperty('--theme-text', '#0f172a');
+      r.style.setProperty('--theme-border', 'rgba(15,23,42,0.08)');
+    }
+
+    async function cargarTema() {
+      try {
+        const res = await fetch("/api/themes/current", { credentials: "include" });
+        if (!res.ok) return;
+        applyTheme(await res.json());
+      } catch {}
+    }
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      currentUser = await validarSesion();
+      if (!currentUser) return;
+      studioId = currentUser.studioId;
+      const el = document.getElementById("studio-admin-name");
+      if (el) el.textContent = currentUser.studioName || "Studio Admin";
+      await cargarTema();
+      await initPage();
+      initLogout();
+    });
+
+    function normalizeLogoutButton() {
+      const b = document.getElementById("btn-logout");
+      if (!b) return;
+      b.textContent = "Cerrar sesión";
+      b.className = "logout-pill";
+    }
+  </script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: 'var(--theme-primary)',
+            accent: '#E7C7C2',
+            premium: '#D6C3A5',
+            'background-light': 'var(--theme-background)',
+            'accent-border': 'var(--theme-border)',
+            'text-main': 'var(--theme-text)',
+            'text-sub': '#6D6766'
+          },
+          fontFamily: { display: ["Manrope", "sans-serif"] }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    :root {
+      --theme-background: #F5E9E7;
+      --theme-primary: #111111;
+      --theme-secondary: #ffffff;
+      --theme-text: #0f172a;
+      --theme-border: rgba(15,23,42,0.08);
+    }
+    body { font-family: 'Manrope', sans-serif; color: var(--theme-text); background-color: var(--theme-background); }
+    .theme-primary-bg { background-color: var(--theme-primary) !important; color: #fff !important; }
+    .theme-border { border-color: var(--theme-border) !important; }
+    .logout-pill { width:100%; padding:.75rem 1rem; border-radius:.75rem; border:1px solid rgba(0,0,0,.08); background:#fff; font-weight:700; text-align:center; cursor:pointer; }
+    .tab-active { background-color: var(--theme-primary) !important; color:#fff !important; }
+    .tab-inactive { background:#fff; color:var(--theme-text); border:1px solid var(--theme-border); }
+    .badge-membresia { background:#dbeafe; color:#1e40af; }
+    .badge-dropin    { background:#fef3c7; color:#92400e; }
+    .badge-efectivo  { background:#dcfce7; color:#166534; }
+    .badge-trans     { background:#f3e8ff; color:#6b21a8; }
+    .badge-tarjeta   { background:#fce7f3; color:#9d174d; }
+    .stat-card { background:#fff; border-radius:1rem; border:1px solid var(--theme-border); padding:1.5rem; }
+    tr:hover td { background: rgba(0,0,0,.018); }
+  </style>
+</head>
+
+<body>
+<div class="flex h-screen overflow-hidden">
+
+  <!-- Sidebar -->
+  <aside class="w-64 border-r border-[var(--theme-border)] bg-white/75 flex flex-col backdrop-blur">
+    <div class="p-6 flex items-center gap-3">
+      <div class="size-10 rounded-full theme-primary-bg flex items-center justify-center">
+        <span class="material-symbols-outlined">auto_awesome</span>
+      </div>
+      <div>
+        <h1 class="text-lg font-bold leading-tight" id="studio-admin-name">Studio Admin</h1>
+        <p class="text-xs text-text-sub uppercase tracking-widest font-semibold">Premium Management</p>
+      </div>
+    </div>
+    <nav class="flex-1 px-4 py-4 space-y-2">
+      <a class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-black/5" href="/index.html">
+        <span class="material-symbols-outlined">dashboard</span><span class="font-medium">Dashboard</span>
+      </a>
+      <a class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-black/5" href="/students.html">
+        <span class="material-symbols-outlined">group</span><span class="font-bold">Alumnos</span>
+      </a>
+      <a class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-black/5" href="/class-admin.html">
+        <span class="material-symbols-outlined">settings_applications</span><span class="text-sm font-medium">Config. clases</span>
+      </a>
+      <a class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-black/5" href="/memberships.html">
+        <span class="material-symbols-outlined">card_membership</span><span class="text-sm font-medium">Membresías</span>
+      </a>
+      <a class="flex items-center gap-3 px-4 py-3 theme-primary-bg rounded-xl shadow-sm" href="/payments.html">
+        <span class="material-symbols-outlined">payments</span><span class="text-sm font-semibold">Pagos</span>
+      </a>
+    </nav>
+    <div class="p-4 mt-auto">
+      <button id="btn-logout" class="w-full rounded-xl border border-[var(--theme-border)] px-4 py-3 font-semibold bg-white">Cerrar sesión</button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="flex-1 overflow-y-auto p-8">
+    <header class="mb-8 flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <h2 class="text-4xl font-black tracking-tight">Pagos</h2>
+        <p class="text-text-sub text-lg mt-1">Desglose de ingresos por período</p>
+      </div>
+      <!-- Periodo selector -->
+      <div class="flex items-center gap-2 bg-white border border-[var(--theme-border)] rounded-xl p-1 shadow-sm">
+        <button onclick="setPeriodo('dia')"  id="tab-dia"  class="tab-active  px-4 py-2 rounded-lg text-sm font-bold transition-all">Día</button>
+        <button onclick="setPeriodo('semana')" id="tab-semana" class="tab-inactive px-4 py-2 rounded-lg text-sm font-bold transition-all">Semana</button>
+        <button onclick="setPeriodo('mes')"  id="tab-mes"  class="tab-inactive px-4 py-2 rounded-lg text-sm font-bold transition-all">Mes</button>
+      </div>
+    </header>
+
+    <!-- Navegador de fecha -->
+    <div class="flex items-center justify-between bg-white rounded-xl border border-[var(--theme-border)] px-6 py-4 mb-6 shadow-sm">
+      <button onclick="navegarPeriodo(-1)" class="size-9 rounded-lg border border-[var(--theme-border)] flex items-center justify-center hover:bg-[var(--theme-background)] transition">
+        <span class="material-symbols-outlined text-lg">chevron_left</span>
+      </button>
+      <div class="text-center">
+        <p id="label-periodo" class="text-lg font-bold text-text-main"></p>
+        <p id="sublabel-periodo" class="text-xs text-text-sub font-medium"></p>
+      </div>
+      <button onclick="navegarPeriodo(1)" id="btn-siguiente" class="size-9 rounded-lg border border-[var(--theme-border)] flex items-center justify-center hover:bg-[var(--theme-background)] transition">
+        <span class="material-symbols-outlined text-lg">chevron_right</span>
+      </button>
+    </div>
+
+    <!-- KPIs -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      <div class="stat-card">
+        <p class="text-xs font-bold uppercase tracking-wider text-text-sub mb-1">Total ingresado</p>
+        <p id="kpi-total" class="text-3xl font-black text-text-main">$0</p>
+        <p class="text-xs text-text-sub mt-1" id="kpi-total-sub">— pagos</p>
+      </div>
+      <div class="stat-card">
+        <p class="text-xs font-bold uppercase tracking-wider text-text-sub mb-1">Membresías</p>
+        <p id="kpi-membresias" class="text-3xl font-black text-blue-600">$0</p>
+        <p class="text-xs text-text-sub mt-1" id="kpi-membresias-sub">— pagos</p>
+      </div>
+      <div class="stat-card">
+        <p class="text-xs font-bold uppercase tracking-wider text-text-sub mb-1">Drop-in</p>
+        <p id="kpi-dropin" class="text-3xl font-black text-amber-600">$0</p>
+        <p class="text-xs text-text-sub mt-1" id="kpi-dropin-sub">— clases sueltas</p>
+      </div>
+      <div class="stat-card">
+        <p class="text-xs font-bold uppercase tracking-wider text-text-sub mb-1">Ticket promedio</p>
+        <p id="kpi-promedio" class="text-3xl font-black text-text-main">$0</p>
+        <p class="text-xs text-text-sub mt-1">por pago</p>
+      </div>
+    </div>
+
+    <!-- Chart + métodos -->
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-8">
+      <div class="xl:col-span-2 bg-white rounded-xl border border-[var(--theme-border)] p-6 shadow-sm">
+        <h3 class="font-bold text-lg mb-4" id="chart-titulo">Ingresos por día</h3>
+        <div style="height:220px; position:relative;">
+          <canvas id="chart-pagos"></canvas>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl border border-[var(--theme-border)] p-6 shadow-sm">
+        <h3 class="font-bold text-lg mb-4">Por método de pago</h3>
+        <div id="metodos-list" class="space-y-3"></div>
+      </div>
+    </div>
+
+    <!-- Tabla detalle -->
+    <div class="bg-white rounded-xl border border-[var(--theme-border)] shadow-sm overflow-hidden">
+      <div class="px-6 py-5 border-b border-[var(--theme-border)] flex items-center justify-between">
+        <h3 class="font-bold text-lg">Detalle de pagos</h3>
+        <span id="detalle-count" class="text-sm text-text-sub font-medium">0 registros</span>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left">
+          <thead>
+            <tr class="bg-[var(--theme-background)]/50 text-xs uppercase tracking-wider text-text-sub">
+              <th class="px-6 py-4">Fecha</th>
+              <th class="px-6 py-4">Alumno</th>
+              <th class="px-6 py-4">Tipo</th>
+              <th class="px-6 py-4">Concepto</th>
+              <th class="px-6 py-4">Método</th>
+              <th class="px-6 py-4 text-right">Monto</th>
+            </tr>
+          </thead>
+          <tbody id="tabla-pagos-body"></tbody>
+        </table>
+      </div>
+      <div id="tabla-empty" class="hidden px-6 py-12 text-center text-text-sub">
+        <span class="material-symbols-outlined text-4xl block mb-2 opacity-30">payments</span>
+        Sin pagos en este período
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+// ─── Estado ───────────────────────────────────────────────────────────────────
+let allPayments = [];
+let periodo = 'dia';
+let fechaRef = new Date();
+let chartInstance = null;
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+async function initPage() {
+  await cargarPagos();
+  renderPeriodo();
+}
+
+async function cargarPagos() {
+  try {
+    const res = await fetch('/api/payments', { credentials: 'include' });
+    if (!res.ok) throw new Error();
+    allPayments = await res.json();
+  } catch {
+    await Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudieron cargar los pagos', confirmButtonColor: '#dc2626' });
+  }
+}
+
+// ─── Período ──────────────────────────────────────────────────────────────────
+function setPeriodo(p) {
+  periodo = p;
+  ['dia','semana','mes'].forEach(t => {
+    const btn = document.getElementById(`tab-${t}`);
+    btn.className = t === p
+      ? 'tab-active  px-4 py-2 rounded-lg text-sm font-bold transition-all'
+      : 'tab-inactive px-4 py-2 rounded-lg text-sm font-bold transition-all';
+  });
+  renderPeriodo();
+}
+
+function navegarPeriodo(dir) {
+  if (periodo === 'dia') {
+    fechaRef = addDays(fechaRef, dir);
+  } else if (periodo === 'semana') {
+    fechaRef = addDays(fechaRef, dir * 7);
+  } else {
+    fechaRef = new Date(fechaRef.getFullYear(), fechaRef.getMonth() + dir, 1);
+  }
+  // No permitir avanzar más allá de hoy
+  if (fechaRef > new Date()) fechaRef = new Date();
+  renderPeriodo();
+}
+
+function addDays(date, n) {
+  const d = new Date(date);
+  d.setDate(d.getDate() + n);
+  return d;
+}
+
+function isoDate(d) {
+  return d.toISOString().split('T')[0];
+}
+
+function getRange() {
+  const today = new Date();
+  if (periodo === 'dia') {
+    return { start: isoDate(fechaRef), end: isoDate(fechaRef) };
+  }
+  if (periodo === 'semana') {
+    const day = fechaRef.getDay(); // 0=dom
+    const mon = addDays(fechaRef, -(day === 0 ? 6 : day - 1));
+    const sun = addDays(mon, 6);
+    return { start: isoDate(mon), end: isoDate(sun) };
+  }
+  // mes
+  const start = new Date(fechaRef.getFullYear(), fechaRef.getMonth(), 1);
+  const end   = new Date(fechaRef.getFullYear(), fechaRef.getMonth() + 1, 0);
+  return { start: isoDate(start), end: isoDate(end) };
+}
+
+function filtrarPagos() {
+  const { start, end } = getRange();
+  return allPayments.filter(p => {
+    const d = p.paymentDate;
+    return d >= start && d <= end;
+  });
+}
+
+// ─── Render principal ─────────────────────────────────────────────────────────
+function renderPeriodo() {
+  actualizarLabels();
+  const pagos = filtrarPagos();
+  renderKPIs(pagos);
+  renderChart(pagos);
+  renderMetodos(pagos);
+  renderTabla(pagos);
+}
+
+function actualizarLabels() {
+  const { start, end } = getRange();
+  const labelEl    = document.getElementById('label-periodo');
+  const sublabelEl = document.getElementById('sublabel-periodo');
+  const chartTit   = document.getElementById('chart-titulo');
+  const hoy        = isoDate(new Date());
+
+  if (periodo === 'dia') {
+    const d = new Date(start + 'T12:00:00');
+    labelEl.textContent    = start === hoy ? 'Hoy' : formatDateLong(d);
+    sublabelEl.textContent = start;
+    chartTit.textContent   = 'Ingresos por hora';
+  } else if (periodo === 'semana') {
+    labelEl.textContent    = `${formatDateShort(new Date(start+'T12:00:00'))} — ${formatDateShort(new Date(end+'T12:00:00'))}`;
+    sublabelEl.textContent = 'Vista semanal';
+    chartTit.textContent   = 'Ingresos por día de la semana';
+  } else {
+    const d = new Date(start + 'T12:00:00');
+    labelEl.textContent    = d.toLocaleString('es-MX', { month: 'long', year: 'numeric' });
+    sublabelEl.textContent = 'Vista mensual';
+    chartTit.textContent   = 'Ingresos por semana del mes';
+  }
+
+  // Deshabilitar "siguiente" si ya estamos en el período actual
+  const btnSig = document.getElementById('btn-siguiente');
+  btnSig.disabled = end >= hoy;
+  btnSig.style.opacity = end >= hoy ? '0.35' : '1';
+}
+
+function formatDateLong(d) {
+  return d.toLocaleDateString('es-MX', { weekday:'long', day:'numeric', month:'long' });
+}
+function formatDateShort(d) {
+  return d.toLocaleDateString('es-MX', { day:'numeric', month:'short' });
+}
+
+// ─── KPIs ─────────────────────────────────────────────────────────────────────
+function renderKPIs(pagos) {
+  const total     = pagos.reduce((s, p) => s + Number(p.amount || 0), 0);
+  const membs     = pagos.filter(p => p.paymentType === 'MEMBRESIA');
+  const drops     = pagos.filter(p => p.paymentType === 'DROP_IN');
+  const totalMemb = membs.reduce((s, p) => s + Number(p.amount || 0), 0);
+  const totalDrop = drops.reduce((s, p) => s + Number(p.amount || 0), 0);
+  const promedio  = pagos.length ? total / pagos.length : 0;
+
+  document.getElementById('kpi-total').textContent      = fmt(total);
+  document.getElementById('kpi-total-sub').textContent  = `${pagos.length} pago${pagos.length !== 1 ? 's' : ''}`;
+  document.getElementById('kpi-membresias').textContent = fmt(totalMemb);
+  document.getElementById('kpi-membresias-sub').textContent = `${membs.length} pago${membs.length !== 1 ? 's' : ''}`;
+  document.getElementById('kpi-dropin').textContent     = fmt(totalDrop);
+  document.getElementById('kpi-dropin-sub').textContent = `${drops.length} clase${drops.length !== 1 ? 's' : ''} sueltas`;
+  document.getElementById('kpi-promedio').textContent   = fmt(promedio);
+}
+
+function fmt(n) {
+  return '$' + Number(n).toLocaleString('es-MX', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+}
+
+// ─── Gráfica ──────────────────────────────────────────────────────────────────
+function renderChart(pagos) {
+  const canvas = document.getElementById('chart-pagos');
+  const ctx    = canvas.getContext('2d');
+  if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
+
+  let labels = [], dataMemb = [], dataDrop = [];
+
+  if (periodo === 'dia') {
+    // Agrupar por hora
+    const byHour = {};
+    for (let h = 6; h <= 22; h++) byHour[h] = { m: 0, d: 0 };
+    pagos.forEach(p => {
+      const h = p.createdAt ? new Date(p.createdAt).getHours() : 10;
+      if (byHour[h] === undefined) byHour[h] = { m: 0, d: 0 };
+      if (p.paymentType === 'MEMBRESIA') byHour[h].m += Number(p.amount || 0);
+      else                               byHour[h].d += Number(p.amount || 0);
+    });
+    labels   = Object.keys(byHour).map(h => `${h}h`);
+    dataMemb = Object.values(byHour).map(v => v.m);
+    dataDrop = Object.values(byHour).map(v => v.d);
+
+  } else if (periodo === 'semana') {
+    const { start } = getRange();
+    const days = Array.from({ length: 7 }, (_, i) => addDays(new Date(start+'T12:00:00'), i));
+    labels   = days.map(d => d.toLocaleDateString('es-MX', { weekday:'short', day:'numeric' }));
+    dataMemb = days.map(d => pagos.filter(p => p.paymentDate === isoDate(d) && p.paymentType === 'MEMBRESIA').reduce((s,p) => s + Number(p.amount||0), 0));
+    dataDrop = days.map(d => pagos.filter(p => p.paymentDate === isoDate(d) && p.paymentType === 'DROP_IN').reduce((s,p) => s + Number(p.amount||0), 0));
+
+  } else {
+    // Semanas del mes
+    const { start, end } = getRange();
+    const s = new Date(start+'T12:00:00');
+    const e = new Date(end+'T12:00:00');
+    let semana = 1, curr = new Date(s);
+    const semanas = [];
+    while (curr <= e) {
+      const wStart = isoDate(curr);
+      const wEnd   = isoDate(addDays(curr, 6) > e ? e : addDays(curr, 6));
+      semanas.push({ label: `Sem ${semana}`, start: wStart, end: wEnd });
+      curr = addDays(curr, 7);
+      semana++;
+    }
+    labels   = semanas.map(w => w.label);
+    dataMemb = semanas.map(w => pagos.filter(p => p.paymentDate >= w.start && p.paymentDate <= w.end && p.paymentType === 'MEMBRESIA').reduce((s,p) => s + Number(p.amount||0), 0));
+    dataDrop = semanas.map(w => pagos.filter(p => p.paymentDate >= w.start && p.paymentDate <= w.end && p.paymentType === 'DROP_IN').reduce((s,p) => s + Number(p.amount||0), 0));
+  }
+
+  const primary = getComputedStyle(document.documentElement).getPropertyValue('--theme-primary').trim() || '#111111';
+
+  chartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Membresías', data: dataMemb, backgroundColor: 'rgba(59,130,246,0.75)', borderRadius: 6, borderSkipped: false },
+        { label: 'Drop-in',   data: dataDrop,  backgroundColor: 'rgba(245,158,11,0.75)', borderRadius: 6, borderSkipped: false }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { family: 'Manrope', size: 11 }, boxWidth: 12, padding: 16 } },
+        tooltip: {
+          callbacks: {
+            label: ctx => ` ${ctx.dataset.label}: ${fmt(ctx.parsed.y)}`
+          }
+        }
+      },
+      scales: {
+        x: { stacked: true, grid: { display: false }, ticks: { font: { family: 'Manrope', size: 11 } } },
+        y: { stacked: true, grid: { color: 'rgba(0,0,0,0.04)' }, ticks: { font: { family: 'Manrope', size: 11 }, callback: v => '$' + v.toLocaleString('es-MX') } }
+      }
+    }
+  });
+}
+
+// ─── Métodos de pago ──────────────────────────────────────────────────────────
+function renderMetodos(pagos) {
+  const cont = document.getElementById('metodos-list');
+  if (!pagos.length) { cont.innerHTML = '<p class="text-text-sub text-sm">Sin datos</p>'; return; }
+
+  const byMethod = {};
+  pagos.forEach(p => {
+    const m = p.paymentMethod || 'OTRO';
+    if (!byMethod[m]) byMethod[m] = { total: 0, count: 0 };
+    byMethod[m].total += Number(p.amount || 0);
+    byMethod[m].count++;
+  });
+
+  const grandTotal = pagos.reduce((s, p) => s + Number(p.amount || 0), 0);
+
+  const badgeClass = { EFECTIVO: 'badge-efectivo', TRANSFERENCIA: 'badge-trans', TARJETA: 'badge-tarjeta' };
+  const iconMap    = { EFECTIVO: 'payments', TRANSFERENCIA: 'account_balance', TARJETA: 'credit_card' };
+
+  cont.innerHTML = Object.entries(byMethod)
+    .sort((a, b) => b[1].total - a[1].total)
+    .map(([m, v]) => {
+      const pct = grandTotal ? Math.round((v.total / grandTotal) * 100) : 0;
+      const cls = badgeClass[m] || 'badge-efectivo';
+      const ico = iconMap[m] || 'paid';
+      return `
+        <div class="flex items-center gap-3">
+          <span class="material-symbols-outlined text-lg text-text-sub">${ico}</span>
+          <div class="flex-1 min-w-0">
+            <div class="flex justify-between items-center mb-1">
+              <span class="text-sm font-bold">${m}</span>
+              <span class="text-sm font-black">${fmt(v.total)}</span>
+            </div>
+            <div class="w-full h-1.5 rounded-full bg-[var(--theme-background)] overflow-hidden">
+              <div class="h-full rounded-full bg-[var(--theme-primary)] transition-all" style="width:${pct}%"></div>
+            </div>
+            <p class="text-xs text-text-sub mt-1">${v.count} pago${v.count !== 1 ? 's' : ''} · ${pct}%</p>
+          </div>
+        </div>`;
+    }).join('');
+}
+
+// ─── Tabla detalle ────────────────────────────────────────────────────────────
+function renderTabla(pagos) {
+  const tbody   = document.getElementById('tabla-pagos-body');
+  const empty   = document.getElementById('tabla-empty');
+  const countEl = document.getElementById('detalle-count');
+
+  countEl.textContent = `${pagos.length} registro${pagos.length !== 1 ? 's' : ''}`;
+
+  if (!pagos.length) {
+    tbody.innerHTML = '';
+    empty.classList.remove('hidden');
+    return;
+  }
+  empty.classList.add('hidden');
+
+  const sorted = [...pagos].sort((a, b) => (b.paymentDate || '').localeCompare(a.paymentDate || '') || (b.createdAt || '').localeCompare(a.createdAt || ''));
+
+  const badgeType   = { MEMBRESIA: 'badge-membresia', DROP_IN: 'badge-dropin' };
+  const labelType   = { MEMBRESIA: 'Membresía', DROP_IN: 'Drop-in' };
+  const badgeMethod = { EFECTIVO: 'badge-efectivo', TRANSFERENCIA: 'badge-trans', TARJETA: 'badge-tarjeta' };
+
+  tbody.innerHTML = sorted.map(p => {
+    const bType   = badgeType[p.paymentType]   || 'badge-efectivo';
+    const lType   = labelType[p.paymentType]   || p.paymentType || '—';
+    const bMethod = badgeMethod[p.paymentMethod] || 'badge-efectivo';
+    const concepto = p.paymentType === 'DROP_IN'
+      ? `${p.classTypeName || 'Clase'} ${p.classDate ? '· ' + p.classDate : ''}`
+      : (p.notes || p.reference || 'Membresía');
+
+    return `
+      <tr class="border-b border-[var(--theme-border)] transition-colors">
+        <td class="px-6 py-4 text-sm text-text-sub font-medium whitespace-nowrap">${p.paymentDate || '—'}</td>
+        <td class="px-6 py-4">
+          <div class="font-semibold text-sm">${p.clientName || '—'}</div>
+        </td>
+        <td class="px-6 py-4">
+          <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold ${bType}">${lType}</span>
+        </td>
+        <td class="px-6 py-4 text-sm text-text-sub max-w-[200px] truncate">${concepto}</td>
+        <td class="px-6 py-4">
+          <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold ${bMethod}">${p.paymentMethod || '—'}</span>
+        </td>
+        <td class="px-6 py-4 text-right font-black text-text-main">${fmt(p.amount)}</td>
+      </tr>`;
+  }).join('');
+}
+
+// ─── Logout ───────────────────────────────────────────────────────────────────
+function initLogout() {
+  const btn = document.getElementById('btn-logout');
+  if (!btn) return;
+  normalizeLogoutButton();
+  btn.addEventListener('click', async () => {
+    const r = await Swal.fire({ title:'¿Cerrar sesión?', icon:'question', showCancelButton:true, confirmButtonColor:'#0A1128', cancelButtonColor:'#6b7280', confirmButtonText:'Cerrar sesión', cancelButtonText:'Cancelar' });
+    if (!r.isConfirmed) return;
+    try { await fetch('/api/auth/logout', { method:'POST', credentials:'include' }); } catch {}
+    window.location.href = '/login.html';
+  });
+}
+</script>
+</body>
+</html>
