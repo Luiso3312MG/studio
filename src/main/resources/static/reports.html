@@ -133,7 +133,6 @@
     <!-- Tabs -->
     <div class="flex border-b border-accent/30 mb-6 gap-8">
       <button onclick="setTab('ingresos')" id="tab-ingresos" class="main-tab-on pb-3 text-sm transition-all">Ingresos</button>
-      <button onclick="setTab('operativo')" id="tab-operativo" class="main-tab-off pb-3 text-sm transition-all">Operativo</button>
     </div>
 
     <!-- ── INGRESOS ── -->
@@ -216,91 +215,6 @@
         </div>
         <div id="cobros-empty" class="hidden px-5 py-10 text-center text-text-sub text-sm">
           <span class="material-symbols-outlined text-3xl block mb-1 opacity-30">payments</span>Sin cobros en este período
-        </div>
-      </div>
-    </div>
-
-    <!-- ── OPERATIVO ── -->
-    <div id="panel-operativo" class="hidden">
-
-      <!-- Selector período operativo -->
-      <div class="flex items-center gap-1 bg-accent/10 p-1 rounded-xl border border-accent/30 mb-5 w-fit">
-        <button onclick="setPerOp('semana')" id="op-semana" class="per-off px-4 py-2 rounded-lg text-sm font-bold transition-all">Esta semana</button>
-        <button onclick="setPerOp('mes')"    id="op-mes"    class="per-on  px-4 py-2 rounded-lg text-sm font-bold transition-all">Este mes</button>
-        <button onclick="setPerOp('total')"  id="op-total"  class="per-off px-4 py-2 rounded-lg text-sm font-bold transition-all">Total</button>
-      </div>
-
-      <!-- KPIs operativos -->
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
-        <div class="kpi">
-          <div class="p-2 rounded-lg bg-[var(--theme-primary)]/10 w-fit mb-2" style="color:var(--theme-primary)"><span class="material-symbols-outlined text-xl">payments</span></div>
-          <p class="text-xs font-bold uppercase tracking-wider text-text-sub mb-1">Ingresos</p>
-          <h3 id="o-ing" class="text-2xl font-extrabold">$0</h3>
-          <p id="o-ing-s" class="text-xs text-text-sub mt-1">— cobros</p>
-        </div>
-        <div class="kpi">
-          <div class="p-2 rounded-lg bg-blue-50 text-blue-600 w-fit mb-2"><span class="material-symbols-outlined text-xl">group</span></div>
-          <p class="text-xs font-bold uppercase tracking-wider text-text-sub mb-1">Alumnos activos</p>
-          <h3 id="o-alu" class="text-2xl font-extrabold">0</h3>
-          <p id="o-alu-s" class="text-xs text-text-sub mt-1">registrados</p>
-        </div>
-        <div class="kpi">
-          <div class="p-2 rounded-lg bg-amber-50 text-amber-600 w-fit mb-2"><span class="material-symbols-outlined text-xl">event</span></div>
-          <p class="text-xs font-bold uppercase tracking-wider text-text-sub mb-1">Clases programadas</p>
-          <h3 id="o-cla" class="text-2xl font-extrabold">0</h3>
-          <p class="text-xs text-text-sub mt-1">en el período</p>
-        </div>
-        <div class="kpi">
-          <div class="p-2 rounded-lg bg-rose-50 text-rose-600 w-fit mb-2"><span class="material-symbols-outlined text-xl">card_membership</span></div>
-          <p class="text-xs font-bold uppercase tracking-wider text-text-sub mb-1">Membresías activas</p>
-          <h3 id="o-mem" class="text-2xl font-extrabold">0</h3>
-          <p id="o-mem-s" class="text-xs text-text-sub mt-1">de — alumnos</p>
-        </div>
-      </div>
-
-      <!-- Gráfica 6 meses + donut -->
-      <div class="grid grid-cols-1 xl:grid-cols-3 gap-5 mb-5">
-        <div class="xl:col-span-2 bg-white rounded-xl border border-accent/30 p-5 shadow-sm">
-          <h4 class="font-bold mb-1">Ingresos últimos 6 meses</h4>
-          <p class="text-xs text-text-sub mb-4">Membresías vs Clases sueltas</p>
-          <div style="height:200px;position:relative"><canvas id="c-6meses"></canvas></div>
-        </div>
-        <div class="bg-white rounded-xl border border-accent/30 p-5 shadow-sm">
-          <h4 class="font-bold mb-1">Estado de membresías</h4>
-          <p class="text-xs text-text-sub mb-3">Distribución actual</p>
-          <div style="height:150px;position:relative;margin-bottom:.75rem"><canvas id="c-memb"></canvas></div>
-          <div id="memb-legend" class="space-y-2"></div>
-        </div>
-      </div>
-
-      <!-- Tablas operativas -->
-      <div class="grid grid-cols-1 xl:grid-cols-2 gap-5">
-        <div class="bg-white rounded-xl border border-accent/30 shadow-sm overflow-hidden">
-          <div class="px-5 py-4 border-b border-accent/20 flex items-center justify-between">
-            <h4 class="font-bold">Cobros recientes</h4>
-            <button onclick="setTab('ingresos')" class="text-xs font-bold hover:underline" style="color:var(--theme-primary)">Ver todos →</button>
-          </div>
-          <table class="w-full text-left text-sm">
-            <thead class="text-[10px] uppercase font-bold tracking-wider text-text-sub bg-[var(--theme-bg)]">
-              <tr><th class="px-5 py-3">Alumno</th><th class="px-5 py-3">Tipo</th><th class="px-5 py-3">Fecha</th><th class="px-5 py-3 text-right">Monto</th></tr>
-            </thead>
-            <tbody id="tbody-rec" class="divide-y divide-accent/10"></tbody>
-          </table>
-          <div id="rec-empty" class="hidden px-5 py-8 text-center text-text-sub text-sm">Sin cobros recientes</div>
-        </div>
-
-        <div class="bg-white rounded-xl border border-accent/30 shadow-sm overflow-hidden">
-          <div class="px-5 py-4 border-b border-accent/20 flex items-center justify-between">
-            <h4 class="font-bold">Clases del período</h4>
-            <span id="o-cla-lbl" class="text-xs font-bold bg-accent/20 text-text-sub px-2 py-1 rounded">Este mes</span>
-          </div>
-          <table class="w-full text-left text-sm">
-            <thead class="text-[10px] uppercase font-bold tracking-wider text-text-sub bg-[var(--theme-bg)]">
-              <tr><th class="px-5 py-3">Tipo · Sala</th><th class="px-5 py-3">Fecha</th><th class="px-5 py-3">Horario</th><th class="px-5 py-3 text-right">Cupos</th></tr>
-            </thead>
-            <tbody id="tbody-cla" class="divide-y divide-accent/10"></tbody>
-          </table>
-          <div id="cla-empty" class="hidden px-5 py-8 text-center text-text-sub text-sm">Sin clases en el período</div>
         </div>
       </div>
     </div>
