@@ -21,6 +21,12 @@ public class PaymentEntity {
     @Column(name = "client_membership_id")
     private Long clientMembershipId;
 
+    @Column(name = "class_id")
+    private Long classId;
+
+    @Column(name = "payment_type")
+    private String paymentType;
+
     @Column(name = "amount", nullable = false)
     private BigDecimal amount;
 
@@ -47,6 +53,10 @@ public class PaymentEntity {
     public void setClientId(Long clientId) { this.clientId = clientId; }
     public Long getClientMembershipId() { return clientMembershipId; }
     public void setClientMembershipId(Long clientMembershipId) { this.clientMembershipId = clientMembershipId; }
+    public Long getClassId() { return classId; }
+    public void setClassId(Long classId) { this.classId = classId; }
+    public String getPaymentType() { return paymentType; }
+    public void setPaymentType(String paymentType) { this.paymentType = paymentType; }
     public BigDecimal getAmount() { return amount; }
     public void setAmount(BigDecimal amount) { this.amount = amount; }
     public String getPaymentMethod() { return paymentMethod; }
@@ -58,4 +68,5 @@ public class PaymentEntity {
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }
     public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }
