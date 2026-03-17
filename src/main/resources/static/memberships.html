@@ -18,6 +18,7 @@
       --theme-secondary: #ffffff;
       --theme-text: #0f172a;
       --theme-border: rgba(15, 23, 42, 0.08);
+      --theme-white: rgb(255,255,255);
     }
     body {
       font-family: 'Manrope', sans-serif;
@@ -28,6 +29,7 @@
     .theme-primary-text { color: var(--theme-primary) !important; }
     .theme-secondary-bg { background-color: var(--theme-secondary) !important; }
     .theme-border { border-color: var(--theme-border) !important; }
+    .theme-white { background-withe: var(--theme-white) !important;}
     .select2-container--bootstrap-5 .select2-selection {
       border-radius: 0.75rem;
       min-height: 46px;
@@ -66,7 +68,7 @@
     </header>
 
     <section class="grid grid-cols-1 xl:grid-cols-5 gap-6">
-      <article class="xl:col-span-2 theme-primary-bg rounded-2xl shadow-sm border theme-border p-6">
+      <article class="xl:col-span-2 theme-white rounded-2xl shadow-sm border theme-border p-6">
         <div class="flex items-center justify-between mb-4">
           <h3 class="text-xl font-bold">Activar o renovar</h3>
           <span class="text-sm text-slate-500">Pago único</span>
@@ -113,7 +115,7 @@
         </form>
       </article>
 
-      <article class="xl:col-span-3 theme-secondary-bg rounded-2xl shadow-sm border theme-border p-6">
+      <article class="xl:col-span-3 theme-white rounded-2xl shadow-sm border theme-border p-6">
         <div class="flex items-center justify-between mb-4">
           <div>
             <h3 class="text-xl font-bold">Membresía actual del alumno</h3>
@@ -130,7 +132,7 @@
       </article>
     </section>
 
-    <section class="theme-secondary-bg rounded-2xl shadow-sm border theme-border p-6">
+    <section class="theme-white rounded-2xl shadow-sm border theme-border p-6">
       <div class="flex items-center justify-between mb-4">
         <div>
           <h3 class="text-xl font-bold">Resumen por alumno</h3>
