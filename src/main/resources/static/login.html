@@ -192,6 +192,13 @@
 
     if(data.authenticated){
 
+    try{
+    await fetch("/api/auth/me",{
+    method:"GET",
+    credentials:"include"
+    })
+    }catch(e){}
+
     window.location.href="/index.html"
     return
 

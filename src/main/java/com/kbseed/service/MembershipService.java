@@ -136,6 +136,7 @@ public class MembershipService {
         payment.setPaymentDate(LocalDate.now());
         payment.setReference(request.getReference());
         payment.setNotes(request.getNotes());
+        payment.setPaymentType("MEMBRESIA");
         paymentRepository.save(payment);
 
         return toMembershipDTO(membership);

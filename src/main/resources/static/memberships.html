@@ -18,6 +18,7 @@
       --theme-secondary: #ffffff;
       --theme-text: #0f172a;
       --theme-border: rgba(15, 23, 42, 0.08);
+      --theme-white: rgb(255,255,255);
     }
     body {
       font-family: 'Manrope', sans-serif;
@@ -28,6 +29,7 @@
     .theme-primary-text { color: var(--theme-primary) !important; }
     .theme-secondary-bg { background-color: var(--theme-secondary) !important; }
     .theme-border { border-color: var(--theme-border) !important; }
+    .theme-white {background-color: var(--theme-white) !important;}
     .select2-container--bootstrap-5 .select2-selection {
       border-radius: 0.75rem;
       min-height: 46px;
@@ -47,10 +49,13 @@
       </div>
     </div>
     <nav class="flex-1 px-4 py-4 space-y-2">
-      <a class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-black/5" href="/index.html"><span class="material-symbols-outlined">dashboard</span><span>Dashboard</span></a>
+      <a class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-black/5" href="/index.html"><span class="material-symbols-outlined">dashboard</span><span>Inicio</span></a>
       <a class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-black/5" href="/students.html"><span class="material-symbols-outlined">group</span><span>Alumnos</span></a>
       <a class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-black/5" href="/class-admin.html"><span class="material-symbols-outlined">settings_applications</span><span>Config. clases</span></a>
       <a id="memberships-nav" class="flex items-center gap-3 px-4 py-3 rounded-xl theme-primary-bg" href="/memberships.html"><span class="material-symbols-outlined">card_membership</span><span>Membresías</span></a>
+      <a href="/reports.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-text-sub hover:bg-accent/20 transition-colors">
+        <span class="material-symbols-outlined fill-icon">bar_chart</span><span class="text-sm font-bold">Reportes</span>
+      </a>
     </nav>
     <div class="p-4 mt-auto">
       <button id="btn-logout" class="w-full rounded-xl border theme-border px-4 py-3 font-semibold theme-secondary-bg">Cerrar sesión</button>
@@ -63,10 +68,10 @@
     </header>
 
     <section class="grid grid-cols-1 xl:grid-cols-5 gap-6">
-      <article class="xl:col-span-2 theme-secondary-bg rounded-2xl shadow-sm border theme-border p-6">
+      <article class="xl:col-span-2 theme-white rounded-2xl shadow-sm border theme-border p-6">
         <div class="flex items-center justify-between mb-4">
           <h3 class="text-xl font-bold">Activar o renovar</h3>
-          <span class="text-sm text-slate-500">Pago completo</span>
+          <span class="text-sm text-slate-500">Pago único</span>
         </div>
         <form id="membership-form" class="space-y-4">
           <div>
@@ -110,7 +115,7 @@
         </form>
       </article>
 
-      <article class="xl:col-span-3 theme-secondary-bg rounded-2xl shadow-sm border theme-border p-6">
+      <article class="xl:col-span-3 theme-white rounded-2xl shadow-sm border theme-border p-6">
         <div class="flex items-center justify-between mb-4">
           <div>
             <h3 class="text-xl font-bold">Membresía actual del alumno</h3>
@@ -127,7 +132,7 @@
       </article>
     </section>
 
-    <section class="theme-secondary-bg rounded-2xl shadow-sm border theme-border p-6">
+    <section class="theme-white rounded-2xl shadow-sm border theme-border p-6">
       <div class="flex items-center justify-between mb-4">
         <div>
           <h3 class="text-xl font-bold">Resumen por alumno</h3>
@@ -145,8 +150,8 @@
             <th class="py-3 pr-4">Vence</th>
             <th class="py-3 pr-4">Disciplinas</th>
             <th class="py-3 pr-4">Clase hoy</th>
-            <th class="py-3 pr-4">Preso</th>
-            <th class="py-3">Aparato</th>
+            <th class="py-3 pr-4">Presoterapia</th>
+            <th class="py-3">Aparatología</th>
           </tr>
           </thead>
           <tbody id="overview-body"></tbody>

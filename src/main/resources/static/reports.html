@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Reportes — Studio Admin</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<script>
+  let currentUser = null, studioId = null;
+
+  async function validarSesion() {
+    try {
+      const r = await fetch("/api/auth/me", { credentials: "include" });
+      if (!r.ok) { window.location.href = "/login.html"; return null; }
+      return await r.json();
+    } catch { window.location.href = "/login.html"; return null; }
+  }
+
+  function applyTheme(t) {
+    const r = document.documentElement;
+    r.style.setProperty('--theme-bg',       t?.backgroundColor || '#F5E9E7');
+    r.style.setProperty('--theme-primary',   t?.primaryColor    || '#111111');
+    r.style.setProperty('--theme-secondary', t?.secondaryColor  || '#ffffff');
+  }
+
+  async function cargarTema() {
+    try {
+      const r = await fetch("/api/themes/current", { credentials: "include" });
+      if (r.ok) applyTheme(await r.json());
+    } catch {}
+  }
+
+  document.addEventListener("DOMContentLoaded", async () => {
+    currentUser = await validarSesion();
+    if (!currentUser) return;
+    studioId = currentUser.studioId;
+    const el = document.getElementById("studio-name");
+    if (el) el.textContent = currentUser.studioName || "Studio Admin";
+    await cargarTema();
+    await initPage();
+    initLogout();
+  });
+</script>
+
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          primary:     'var(--theme-primary)',
+          'bg-studio': 'var(--theme-bg)',
+          accent:      '#E7C7C2',
+          'text-main': '#2B2B2B',
+          'text-sub':  '#6D6766',
+        },
+        fontFamily: { display: ["Manrope","sans-serif"] }
+      }
+    }
+  };
+</script>
+
+<style>
+  :root { --theme-bg:#F5E9E7; --theme-primary:#111111; --theme-secondary:#ffffff; }
+  body  { font-family:'Manrope',sans-serif; background:var(--theme-bg); color:#2B2B2B; }
+  .material-symbols-outlined { font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24; }
+  .fill-icon { font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24; }
+  .sidebar-active { background-color:var(--theme-primary); color:#fff; }
+  .main-tab-on  { border-bottom:2px solid var(--theme-primary); color:var(--theme-primary); font-weight:700; }
+  .main-tab-off { border-bottom:2px solid transparent; color:#6D6766; font-weight:600; }
+  .per-on  { background:var(--theme-primary); color:#fff; }
+  .per-off { background:#fff; color:#2B2B2B; border:1px solid rgba(0,0,0,.08); }
+  .kpi  { background:#fff; border-radius:1rem; border:1px solid rgba(0,0,0,.06); padding:1.4rem; }
+  .bdg  { display:inline-flex; align-items:center; padding:.2rem .55rem; border-radius:9999px; font-size:.68rem; font-weight:700; }
+  .b-blue   { background:#dbeafe; color:#1e40af; }
+  .b-amber  { background:#fef3c7; color:#92400e; }
+  .b-green  { background:#dcfce7; color:#166534; }
+  .b-rose   { background:#ffe4e6; color:#9f1239; }
+  .b-purple { background:#f3e8ff; color:#6b21a8; }
+  .logout-pill { width:100%; padding:.75rem 1rem; border-radius:.75rem; border:1px solid rgba(0,0,0,.08); background:#fff; font-weight:700; cursor:pointer; }
+  tr:hover td { background:rgba(0,0,0,.015); }
+</style>
+</head>
+
+<body class="min-h-screen">
+<div class="flex h-screen overflow-hidden">
+
+  <!-- Sidebar -->
+  <aside class="w-64 flex-shrink-0 border-r border-accent/30 bg-white flex flex-col p-4 h-full">
+    <div class="flex items-center gap-3 px-2 mb-8">
+      <div class="size-10 rounded-full flex items-center justify-center text-white" style="background:var(--theme-primary)">
+        <span class="material-symbols-outlined">auto_awesome</span>
+      </div>
+      <div>
+        <h1 id="studio-name" class="text-base font-bold leading-none">Studio Admin</h1>
+        <p class="text-xs text-text-sub uppercase tracking-wider mt-1 font-semibold">Gestión Premium</p>
+      </div>
+    </div>
+    <nav class="flex flex-col gap-1 flex-1">
+      <a href="/index.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-text-sub hover:bg-accent/20 transition-colors">
+        <span class="material-symbols-outlined">dashboard</span><span class="text-sm font-semibold">Inicio</span>
+      </a>
+      <a href="/students.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-text-sub hover:bg-accent/20 transition-colors">
+        <span class="material-symbols-outlined">group</span><span class="text-sm font-semibold">Alumnos</span>
+      </a>
+      <a href="/class-admin.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-text-sub hover:bg-accent/20 transition-colors">
+        <span class="material-symbols-outlined">settings_applications</span><span class="text-sm font-semibold">Config. clases</span>
+      </a>
+      <a href="/memberships.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-text-sub hover:bg-accent/20 transition-colors">
+        <span class="material-symbols-outlined">card_membership</span><span class="text-sm font-semibold">Membresías</span>
+      </a>
+      <a href="/reports.html" class="sidebar-active flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors">
+        <span class="material-symbols-outlined fill-icon">bar_chart</span><span class="text-sm font-bold">Reportes</span>
+      </a>
+    </nav>
+    <div class="border-t border-accent/30 pt-4 mt-2">
+      <button id="btn-logout" class="logout-pill text-sm text-text-main">Cerrar sesión</button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="flex-1 overflow-y-auto p-8">
+
+    <header class="mb-6">
+      <h2 class="text-3xl font-extrabold tracking-tight">Reportes</h2>
+      <p class="text-text-sub font-medium mt-1">Ingresos y operación del estudio</p>
+    </header>
+
+    <!-- Tabs -->
+    <div class="flex border-b border-accent/30 mb-6 gap-8">
+      <button onclick="setTab('ingresos')" id="tab-ingresos" class="main-tab-on pb-3 text-sm transition-all">Ingresos</button>
+    </div>
+
+    <!-- ── INGRESOS ── -->
+    <div id="panel-ingresos">
+
+      <!-- Selector período + flechas -->
+      <div class="flex flex-wrap items-center justify-between gap-4 mb-5">
+        <div class="flex items-center gap-1 bg-accent/10 p-1 rounded-xl border border-accent/30">
+          <button onclick="setPer('dia')"    id="per-dia"    class="per-on  px-4 py-2 rounded-lg text-sm font-bold transition-all">Día</button>
+          <button onclick="setPer('semana')" id="per-semana" class="per-off px-4 py-2 rounded-lg text-sm font-bold transition-all">Semana</button>
+          <button onclick="setPer('mes')"    id="per-mes"    class="per-off px-4 py-2 rounded-lg text-sm font-bold transition-all">Mes</button>
+        </div>
+        <div class="flex items-center gap-4 bg-white rounded-xl border border-accent/30 px-5 py-3 shadow-sm">
+          <button onclick="navPer(-1)" class="size-8 rounded-lg border border-accent/30 flex items-center justify-center hover:bg-[var(--theme-bg)] transition">
+            <span class="material-symbols-outlined text-lg">chevron_left</span>
+          </button>
+          <div class="text-center min-w-[190px]">
+            <p id="lbl-periodo" class="text-base font-bold"></p>
+            <p id="sub-periodo" class="text-xs text-text-sub"></p>
+          </div>
+          <button onclick="navPer(1)" id="btn-sig" class="size-8 rounded-lg border border-accent/30 flex items-center justify-center hover:bg-[var(--theme-bg)] transition">
+            <span class="material-symbols-outlined text-lg">chevron_right</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- KPIs -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
+        <div class="kpi">
+          <p class="text-xs font-bold uppercase tracking-wider text-text-sub mb-1">Total cobrado</p>
+          <h3 id="i-total" class="text-2xl font-extrabold">$0</h3>
+          <p id="i-total-s" class="text-xs text-text-sub mt-1">— cobros</p>
+        </div>
+        <div class="kpi">
+          <p class="text-xs font-bold uppercase tracking-wider text-text-sub mb-1">Membresías</p>
+          <h3 id="i-memb" class="text-2xl font-extrabold text-blue-600">$0</h3>
+          <p id="i-memb-s" class="text-xs text-text-sub mt-1">— cobros</p>
+        </div>
+        <div class="kpi">
+          <p class="text-xs font-bold uppercase tracking-wider text-text-sub mb-1">Clases sueltas</p>
+          <h3 id="i-drop" class="text-2xl font-extrabold text-amber-600">$0</h3>
+          <p id="i-drop-s" class="text-xs text-text-sub mt-1">— clases</p>
+        </div>
+        <div class="kpi">
+          <p class="text-xs font-bold uppercase tracking-wider text-text-sub mb-1">Promedio por cobro</p>
+          <h3 id="i-prom" class="text-2xl font-extrabold">$0</h3>
+          <p class="text-xs text-text-sub mt-1">por cobro</p>
+        </div>
+      </div>
+
+      <!-- Gráfica + métodos -->
+      <div class="grid grid-cols-1 xl:grid-cols-3 gap-5 mb-5">
+        <div class="xl:col-span-2 bg-white rounded-xl border border-accent/30 p-5 shadow-sm">
+          <h4 id="chart-tit" class="font-bold mb-4">Ingresos por hora</h4>
+          <div style="height:200px;position:relative"><canvas id="c-periodo"></canvas></div>
+        </div>
+        <div class="bg-white rounded-xl border border-accent/30 p-5 shadow-sm">
+          <h4 class="font-bold mb-4">Por método de pago</h4>
+          <div id="metodos" class="space-y-3"></div>
+        </div>
+      </div>
+
+      <!-- Tabla detalle -->
+      <div class="bg-white rounded-xl border border-accent/30 shadow-sm overflow-hidden">
+        <div class="px-5 py-4 border-b border-accent/20 flex items-center justify-between">
+          <h4 class="font-bold">Detalle de cobros</h4>
+          <span id="det-count" class="text-sm text-text-sub">0 registros</span>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead class="text-[10px] uppercase font-bold tracking-wider text-text-sub bg-[var(--theme-bg)]">
+              <tr>
+                <th class="px-5 py-3">Fecha</th><th class="px-5 py-3">Alumno</th>
+                <th class="px-5 py-3">Tipo</th><th class="px-5 py-3">Concepto</th>
+                <th class="px-5 py-3">Método</th><th class="px-5 py-3 text-right">Monto</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-cobros"></tbody>
+          </table>
+        </div>
+        <div id="cobros-empty" class="hidden px-5 py-10 text-center text-text-sub text-sm">
+          <span class="material-symbols-outlined text-3xl block mb-1 opacity-30">payments</span>Sin cobros en este período
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+let allPagos=[], allClientes=[], allClases=[], membOv=[];
+let tabActual='ingresos', periodo='dia', periodoOp='mes';
+let fechaRef=new Date();
+let chPer=null, ch6m=null, chMemb=null;
+
+async function initPage() {
+  try {
+    [allPagos, allClientes, allClases, membOv] = await Promise.all([
+      api('/api/payments'), api('/api/clients'), api('/api/classes'), api('/api/memberships/overview')
+    ]);
+  } catch {
+    await Swal.fire({icon:'error',title:'Error',text:'No se pudo cargar la información',confirmButtonColor:'#dc2626'});
+    return;
+  }
+  renderIngresos();
+  renderOperativo();
+}
+
+async function api(url) {
+  const r = await fetch(url, {credentials:'include'});
+  if (!r.ok) throw new Error(url);
+  return r.json();
+}
+
+// ── Tabs ────────────────────────────────────────────────────────────────────────
+function setTab(t) {
+  tabActual = t;
+  document.getElementById('panel-ingresos').classList.toggle('hidden', t!=='ingresos');
+  document.getElementById('panel-operativo').classList.toggle('hidden', t!=='operativo');
+  document.getElementById('tab-ingresos').className  = t==='ingresos'  ? 'main-tab-on pb-3 text-sm transition-all' : 'main-tab-off pb-3 text-sm transition-all';
+  document.getElementById('tab-operativo').className = t==='operativo' ? 'main-tab-on pb-3 text-sm transition-all' : 'main-tab-off pb-3 text-sm transition-all';
+  if (t==='ingresos')  renderIngresos();
+  if (t==='operativo') renderOperativo();
+}
+
+// ── Ingresos ────────────────────────────────────────────────────────────────────
+function setPer(p) {
+  periodo = p;
+  ['dia','semana','mes'].forEach(t => {
+    document.getElementById(`per-${t}`).className = t===p
+      ? 'per-on  px-4 py-2 rounded-lg text-sm font-bold transition-all'
+      : 'per-off px-4 py-2 rounded-lg text-sm font-bold transition-all';
+  });
+  renderIngresos();
+}
+
+function navPer(dir) {
+  if (periodo==='dia') fechaRef = dias(fechaRef, dir);
+  else if (periodo==='semana') fechaRef = dias(fechaRef, dir*7);
+  else fechaRef = new Date(fechaRef.getFullYear(), fechaRef.getMonth()+dir, 1);
+  if (fechaRef > new Date()) fechaRef = new Date();
+  renderIngresos();
+}
+
+function dias(d,n) { const r=new Date(d); r.setDate(r.getDate()+n); return r; }
+function iso(d) { return d.toISOString().split('T')[0]; }
+
+function rango() {
+  if (periodo==='dia') return {s:iso(fechaRef), e:iso(fechaRef)};
+  if (periodo==='semana') {
+    const day=fechaRef.getDay(), lun=dias(fechaRef,-(day===0?6:day-1));
+    return {s:iso(lun), e:iso(dias(lun,6))};
+  }
+  return {s:iso(new Date(fechaRef.getFullYear(),fechaRef.getMonth(),1)),
+          e:iso(new Date(fechaRef.getFullYear(),fechaRef.getMonth()+1,0))};
+}
+
+function renderIngresos() {
+  const {s,e} = rango();
+  const pagos = allPagos.filter(p => p.paymentDate>=s && p.paymentDate<=e);
+  actualizarNav(s, e);
+  kpisIngresos(pagos);
+  chartPeriodo(pagos, s, e);
+  renderMetodos(pagos);
+  tablaDetalle(pagos);
+}
+
+function actualizarNav(s, e) {
+  const hoy = iso(new Date());
+  const lEl=document.getElementById('lbl-periodo'), sEl=document.getElementById('sub-periodo');
+  const tEl=document.getElementById('chart-tit');
+  if (periodo==='dia') {
+    const d=new Date(s+'T12:00:00');
+    lEl.textContent = s===hoy ? 'Hoy' : d.toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long'});
+    sEl.textContent = s;
+    tEl.textContent = 'Ingresos por hora';
+  } else if (periodo==='semana') {
+    lEl.textContent = `${fShort(new Date(s+'T12:00:00'))} — ${fShort(new Date(e+'T12:00:00'))}`;
+    sEl.textContent = 'Vista semanal';
+    tEl.textContent = 'Ingresos por día';
+  } else {
+    lEl.textContent = new Date(s+'T12:00:00').toLocaleString('es-MX',{month:'long',year:'numeric'});
+    sEl.textContent = 'Vista mensual';
+    tEl.textContent = 'Ingresos por semana';
+  }
+  const b=document.getElementById('btn-sig');
+  b.disabled=e>=hoy; b.style.opacity=e>=hoy?'0.3':'1';
+}
+
+function fShort(d) { return d.toLocaleDateString('es-MX',{day:'numeric',month:'short'}); }
+function $ (n)     { return '$'+Number(n).toLocaleString('es-MX',{minimumFractionDigits:0,maximumFractionDigits:0}); }
+function s (id,v)  { const el=document.getElementById(id); if(el) el.textContent=v; }
+
+function kpisIngresos(pagos) {
+  const tot=pagos.reduce((a,p)=>a+Number(p.amount||0),0);
+  const mb=pagos.filter(p=>p.paymentType==='MEMBRESIA');
+  const dr=pagos.filter(p=>p.paymentType==='DROP_IN');
+  s('i-total', $(tot)); s('i-total-s', `${pagos.length} cobro${pagos.length!==1?'s':''}`);
+  s('i-memb',  $(mb.reduce((a,p)=>a+Number(p.amount||0),0))); s('i-memb-s', `${mb.length} cobro${mb.length!==1?'s':''}`);
+  s('i-drop',  $(dr.reduce((a,p)=>a+Number(p.amount||0),0))); s('i-drop-s', `${dr.length} clase${dr.length!==1?'s':''}`);
+  s('i-prom',  $(pagos.length ? tot/pagos.length : 0));
+}
+
+function chartPeriodo(pagos, sv, ev) {
+  const ctx=document.getElementById('c-periodo').getContext('2d');
+  if (chPer) { chPer.destroy(); chPer=null; }
+  let lbs=[], dm=[], dd=[];
+  if (periodo==='dia') {
+    const bh={};
+    for(let h=6;h<=22;h++) bh[h]={m:0,d:0};
+    pagos.forEach(p=>{
+      const h=p.createdAt?new Date(p.createdAt).getHours():10;
+      if(!bh[h]) bh[h]={m:0,d:0};
+      if(p.paymentType==='MEMBRESIA') bh[h].m+=Number(p.amount||0);
+      else bh[h].d+=Number(p.amount||0);
+    });
+    lbs=Object.keys(bh).map(h=>`${h}h`);
+    dm=Object.values(bh).map(v=>v.m);
+    dd=Object.values(bh).map(v=>v.d);
+  } else if (periodo==='semana') {
+    const ds=Array.from({length:7},(_,i)=>dias(new Date(sv+'T12:00:00'),i));
+    lbs=ds.map(d=>d.toLocaleDateString('es-MX',{weekday:'short',day:'numeric'}));
+    dm=ds.map(d=>pagos.filter(p=>p.paymentDate===iso(d)&&p.paymentType==='MEMBRESIA').reduce((a,p)=>a+Number(p.amount||0),0));
+    dd=ds.map(d=>pagos.filter(p=>p.paymentDate===iso(d)&&p.paymentType==='DROP_IN').reduce((a,p)=>a+Number(p.amount||0),0));
+  } else {
+    const s0=new Date(sv+'T12:00:00'), e0=new Date(ev+'T12:00:00');
+    let sem=1, cur=new Date(s0), sems=[];
+    while(cur<=e0){
+      const ws=iso(cur), we=iso(dias(cur,6)>e0?e0:dias(cur,6));
+      sems.push({l:`Sem ${sem}`,s:ws,e:we}); cur=dias(cur,7); sem++;
+    }
+    lbs=sems.map(w=>w.l);
+    dm=sems.map(w=>pagos.filter(p=>p.paymentDate>=w.s&&p.paymentDate<=w.e&&p.paymentType==='MEMBRESIA').reduce((a,p)=>a+Number(p.amount||0),0));
+    dd=sems.map(w=>pagos.filter(p=>p.paymentDate>=w.s&&p.paymentDate<=w.e&&p.paymentType==='DROP_IN').reduce((a,p)=>a+Number(p.amount||0),0));
+  }
+  chPer=new Chart(ctx,{type:'bar',data:{labels:lbs,datasets:[
+    {label:'Membresías',data:dm,backgroundColor:'rgba(59,130,246,.75)',borderRadius:5,borderSkipped:false},
+    {label:'Clases sueltas',data:dd,backgroundColor:'rgba(245,158,11,.75)',borderRadius:5,borderSkipped:false}
+  ]},options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{position:'bottom',labels:{font:{family:'Manrope',size:11},boxWidth:12,padding:12}},
+      tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${$(c.parsed.y)}`}}},
+    scales:{x:{stacked:true,grid:{display:false},ticks:{font:{family:'Manrope',size:11}}},
+            y:{stacked:true,grid:{color:'rgba(0,0,0,.04)'},ticks:{font:{family:'Manrope',size:11},callback:v=>'$'+v.toLocaleString('es-MX')}}}}});
+}
+
+function renderMetodos(pagos) {
+  const cont=document.getElementById('metodos');
+  if (!pagos.length) { cont.innerHTML='<p class="text-text-sub text-sm">Sin datos</p>'; return; }
+  const bm={};
+  pagos.forEach(p=>{ const m=p.paymentMethod||'OTRO'; if(!bm[m]) bm[m]={t:0,c:0}; bm[m].t+=Number(p.amount||0); bm[m].c++; });
+  const grand=pagos.reduce((a,p)=>a+Number(p.amount||0),0);
+  const ico={EFECTIVO:'payments',TRANSFERENCIA:'account_balance',TARJETA:'credit_card'};
+  cont.innerHTML=Object.entries(bm).sort((a,b)=>b[1].t-a[1].t).map(([m,v])=>{
+    const pct=grand?Math.round(v.t/grand*100):0;
+    return `<div class="flex items-center gap-3">
+      <span class="material-symbols-outlined text-base text-text-sub">${ico[m]||'paid'}</span>
+      <div class="flex-1 min-w-0">
+        <div class="flex justify-between mb-1"><span class="text-sm font-bold">${m}</span><span class="text-sm font-extrabold">${$(v.t)}</span></div>
+        <div class="w-full h-1.5 rounded-full bg-[var(--theme-bg)] overflow-hidden">
+          <div class="h-full rounded-full" style="width:${pct}%;background:var(--theme-primary);opacity:.7"></div>
+        </div>
+        <p class="text-xs text-text-sub mt-1">${v.c} cobro${v.c!==1?'s':''} · ${pct}%</p>
+      </div></div>`;
+  }).join('');
+}
+
+function tablaDetalle(pagos) {
+  const tb=document.getElementById('tbody-cobros'), em=document.getElementById('cobros-empty');
+  s('det-count',`${pagos.length} registro${pagos.length!==1?'s':''}`);
+  if (!pagos.length) { tb.innerHTML=''; em.classList.remove('hidden'); return; }
+  em.classList.add('hidden');
+  const tl={MEMBRESIA:'Membresía',DROP_IN:'Clase suelta'}, tb2={MEMBRESIA:'b-blue',DROP_IN:'b-amber'};
+  const mb2={EFECTIVO:'b-green',TRANSFERENCIA:'b-purple',TARJETA:'b-rose'};
+  tb.innerHTML=[...pagos].sort((a,b)=>(b.paymentDate||'').localeCompare(a.paymentDate||'')).map(p=>{
+    const con=p.paymentType==='DROP_IN'?`${p.classTypeName||'Clase'}${p.classDate?' · '+p.classDate:''}`:(p.notes||p.reference||'Membresía');
+    return `<tr class="border-b border-[var(--theme-bg)] transition-colors">
+      <td class="px-5 py-3 text-xs text-text-sub">${p.paymentDate||'—'}</td>
+      <td class="px-5 py-3 font-semibold text-sm">${p.clientName||'—'}</td>
+      <td class="px-5 py-3"><span class="bdg ${tb2[p.paymentType]||'b-blue'}">${tl[p.paymentType]||p.paymentType||'—'}</span></td>
+      <td class="px-5 py-3 text-sm text-text-sub max-w-[170px] truncate">${con}</td>
+      <td class="px-5 py-3"><span class="bdg ${mb2[p.paymentMethod]||'b-green'}">${p.paymentMethod||'—'}</span></td>
+      <td class="px-5 py-3 text-right font-extrabold">${$(p.amount)}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── Operativo ───────────────────────────────────────────────────────────────────
+function setPerOp(p) {
+  periodoOp=p;
+  ['semana','mes','total'].forEach(t=>{
+    document.getElementById(`op-${t}`).className=t===p
+      ? 'per-on  px-4 py-2 rounded-lg text-sm font-bold transition-all'
+      : 'per-off px-4 py-2 rounded-lg text-sm font-bold transition-all';
+  });
+  renderOperativo();
+}
+
+function rangoOp() {
+  const hoy=new Date(), i=d=>d.toISOString().split('T')[0];
+  if (periodoOp==='semana') {
+    const day=hoy.getDay(), lun=new Date(hoy); lun.setDate(hoy.getDate()-(day===0?6:day-1));
+    return {s:i(lun),e:i(hoy)};
+  }
+  if (periodoOp==='mes') return {s:i(new Date(hoy.getFullYear(),hoy.getMonth(),1)),e:i(hoy)};
+  return {s:'2000-01-01',e:i(hoy)};
+}
+
+function renderOperativo() {
+  const {s,e}=rangoOp();
+  const pagos=allPagos.filter(p=>p.paymentDate>=s&&p.paymentDate<=e);
+  const clases=allClases.filter(c=>c.classDate>=s&&c.classDate<=e&&c.studioId==studioId);
+  const cli=allClientes.filter(c=>c.studioId==studioId);
+  const act=cli.filter(c=>c.status==='ACTIVO'||c.status==='ACTIVE').length;
+  const mAct=membOv.filter(m=>m.membershipStatus==='ACTIVA').length;
+  const tot=pagos.reduce((a,p)=>a+Number(p.amount||0),0);
+
+  s('o-ing',$(tot)); s('o-ing-s',`${pagos.length} cobro${pagos.length!==1?'s':''}`);
+  s('o-alu',act);    s('o-alu-s',`${cli.length} registrados`);
+  s('o-cla',clases.length);
+  s('o-mem',mAct);   s('o-mem-s',`de ${membOv.length} alumnos`);
+
+  const lbs={semana:'Esta semana',mes:'Este mes',total:'Total'};
+  s('o-cla-lbl', lbs[periodoOp]);
+
+  chart6Meses(); chartMemb();
+  cobrosRecientes(pagos); clasesOp(clases);
+}
+
+function chart6Meses() {
+  const ctx=document.getElementById('c-6meses').getContext('2d');
+  if (ch6m) { ch6m.destroy(); ch6m=null; }
+  const meses=[], hoy=new Date();
+  for(let i=5;i>=0;i--){
+    const d=new Date(hoy.getFullYear(),hoy.getMonth()-i,1);
+    meses.push({l:d.toLocaleDateString('es-MX',{month:'short'}), p:`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`});
+  }
+  ch6m=new Chart(ctx,{type:'bar',data:{labels:meses.map(m=>m.l),datasets:[
+    {label:'Membresías',data:meses.map(m=>allPagos.filter(p=>p.paymentDate?.startsWith(m.p)&&p.paymentType==='MEMBRESIA').reduce((a,p)=>a+Number(p.amount||0),0)),backgroundColor:'rgba(59,130,246,.7)',borderRadius:5,borderSkipped:false},
+    {label:'Clases sueltas',data:meses.map(m=>allPagos.filter(p=>p.paymentDate?.startsWith(m.p)&&p.paymentType==='DROP_IN').reduce((a,p)=>a+Number(p.amount||0),0)),backgroundColor:'rgba(245,158,11,.7)',borderRadius:5,borderSkipped:false}
+  ]},options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{position:'bottom',labels:{font:{family:'Manrope',size:11},boxWidth:12,padding:12}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${$(c.parsed.y)}`}}},
+    scales:{x:{stacked:true,grid:{display:false},ticks:{font:{family:'Manrope',size:11}}},y:{stacked:true,grid:{color:'rgba(0,0,0,.04)'},ticks:{font:{family:'Manrope',size:11},callback:v=>'$'+v.toLocaleString('es-MX')}}}}});
+}
+
+function chartMemb() {
+  const ctx=document.getElementById('c-memb').getContext('2d');
+  if (chMemb) { chMemb.destroy(); chMemb=null; }
+  const cnt={};
+  membOv.forEach(m=>{ const ss=m.membershipStatus||'SIN_MEMBRESIA'; cnt[ss]=(cnt[ss]||0)+1; });
+  const lbs=Object.keys(cnt).filter(k=>cnt[k]>0), data=lbs.map(k=>cnt[k]);
+  const col={ACTIVA:'#22c55e',VENCIDA:'#f97316',SIN_MEMBRESIA:'#94a3b8',RENOVADA:'#3b82f6'};
+  const bg=lbs.map(l=>col[l]||'#cbd5e1');
+  chMemb=new Chart(ctx,{type:'doughnut',data:{labels:lbs,datasets:[{data,backgroundColor:bg,borderWidth:0,hoverOffset:4}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.label}: ${c.parsed}`}}}}});
+  const nom={ACTIVA:'Activa',VENCIDA:'Vencida',SIN_MEMBRESIA:'Sin membresía',RENOVADA:'Renovada'};
+  const tot=data.reduce((a,b)=>a+b,0);
+  document.getElementById('memb-legend').innerHTML=lbs.map((l,i)=>`
+    <div class="flex items-center justify-between gap-2">
+      <div class="flex items-center gap-2"><span class="size-2.5 rounded-full inline-block" style="background:${bg[i]}"></span><span class="text-text-sub text-xs">${nom[l]||l}</span></div>
+      <span class="font-bold text-xs">${data[i]} <span class="text-text-sub font-normal">(${tot?Math.round(data[i]/tot*100):0}%)</span></span>
+    </div>`).join('');
+}
+
+function cobrosRecientes(pagos) {
+  const tb=document.getElementById('tbody-rec'), em=document.getElementById('rec-empty');
+  const sorted=[...pagos].sort((a,b)=>(b.paymentDate||'').localeCompare(a.paymentDate||'')).slice(0,8);
+  if (!sorted.length) { tb.innerHTML=''; em.classList.remove('hidden'); return; }
+  em.classList.add('hidden');
+  const tl={MEMBRESIA:'Membresía',DROP_IN:'Clase suelta'}, tb2={MEMBRESIA:'b-blue',DROP_IN:'b-amber'};
+  tb.innerHTML=sorted.map(p=>`
+    <tr class="transition-colors">
+      <td class="px-5 py-3 font-semibold text-sm truncate max-w-[120px]">${p.clientName||'—'}</td>
+      <td class="px-5 py-3"><span class="bdg ${tb2[p.paymentType]||'b-blue'}">${tl[p.paymentType]||p.paymentType||'—'}</span></td>
+      <td class="px-5 py-3 text-xs text-text-sub">${p.paymentDate||'—'}</td>
+      <td class="px-5 py-3 text-right font-extrabold">${$(p.amount)}</td>
+    </tr>`).join('');
+}
+
+function clasesOp(clases) {
+  const tb=document.getElementById('tbody-cla'), em=document.getElementById('cla-empty');
+  const sorted=[...clases].sort((a,b)=>(a.classDate||'').localeCompare(b.classDate||'')).slice(0,8);
+  if (!sorted.length) { tb.innerHTML=''; em.classList.remove('hidden'); return; }
+  em.classList.add('hidden');
+  tb.innerHTML=sorted.map(c=>{
+    const u=(c.capacityTotal||0)-(c.capacity||0), pct=c.capacityTotal>0?Math.round(u/c.capacityTotal*100):0;
+    return `<tr class="transition-colors">
+      <td class="px-5 py-3"><div class="font-semibold text-sm truncate max-w-[130px]">${c.classTypeName||'—'}</div><div class="text-xs text-text-sub">${c.roomName||''}</div></td>
+      <td class="px-5 py-3 text-xs text-text-sub">${c.classDate||'—'}</td>
+      <td class="px-5 py-3 text-xs text-text-sub">${(c.startTime||'').slice(0,5)}–${(c.endTime||'').slice(0,5)}</td>
+      <td class="px-5 py-3 text-right">
+        <div class="flex items-center justify-end gap-2">
+          <div class="w-14 h-1.5 rounded-full bg-accent/30 overflow-hidden">
+            <div class="h-full rounded-full" style="width:${pct}%;background:var(--theme-primary);opacity:.7"></div>
+          </div>
+          <span class="text-xs font-bold">${u}/${c.capacityTotal}</span>
+        </div>
+      </td></tr>`;
+  }).join('');
+}
+
+function initLogout() {
+  document.getElementById('btn-logout')?.addEventListener('click', async () => {
+    const r=await Swal.fire({title:'¿Cerrar sesión?',icon:'question',showCancelButton:true,
+      confirmButtonColor:'#0A1128',cancelButtonColor:'#6b7280',confirmButtonText:'Cerrar sesión',cancelButtonText:'Cancelar'});
+    if (!r.isConfirmed) return;
+    try { await fetch('/api/auth/logout',{method:'POST',credentials:'include'}); } catch {}
+    window.location.href='/login.html';
+  });
+}
+</script>
+</body>
+</html>

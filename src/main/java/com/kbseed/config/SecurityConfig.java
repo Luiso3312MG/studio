@@ -2,8 +2,9 @@ package com.kbseed.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -14,25 +15,17 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable())
-                .cors(Customizer.withDefaults())
+                .csrf(AbstractHttpConfigurer::disable)
+                .cors(AbstractHttpConfigurer::disable)
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                        .sessionFixation().none()          // NO invalidar sesión al autenticar
+                )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/",
-                                "/login.html",
-                                "/index.html",
-                                "/students.html",
-                                "/class-admin.html",
-                                "/memberships.html",
-                                "/favicon.ico",
-                                "/css/**",
-                                "/js/**",
-                                "/images/**"
-                        ).permitAll()
-                        .requestMatchers("/api/auth/login", "/api/auth/logout", "/api/auth/me", "/api/auth/ping").permitAll()
-                        .anyRequest().permitAll())
-                .formLogin(form -> form.disable())
-                .httpBasic(basic -> basic.disable());
+                        .anyRequest().permitAll()
+                )
+                .formLogin(AbstractHttpConfigurer::disable)
+                .httpBasic(AbstractHttpConfigurer::disable);
 
         return http.build();
     }
