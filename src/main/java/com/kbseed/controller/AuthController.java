@@ -4,6 +4,9 @@ import com.kbseed.dto.AuthRequest;
 import com.kbseed.dto.AuthResponse;
 import com.kbseed.dto.MeResponse;
 import com.kbseed.service.AuthService;
+import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -14,6 +17,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/auth")
 public class AuthController {
 
+    private static final Logger log = LoggerFactory.getLogger(AuthController.class);
+
     private final AuthService authService;
 
     public AuthController(AuthService authService) {
@@ -21,8 +26,8 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public AuthResponse login(@RequestBody AuthRequest request) {
-        System.out.println(">>> ENTRÓ AL LOGIN: " + request.getUsername());
+    public AuthResponse login(@Valid @RequestBody AuthRequest request) {
+        log.info("Intento de login para usuario {}", request.getUsername());
         return authService.login(request);
     }
 
@@ -38,7 +43,7 @@ public class AuthController {
 
     @GetMapping("/ping")
     public String ping() {
-        System.out.println(">>> ENTRÓ A PING");
+        log.debug("Ping de autenticación recibido");
         return "pong";
     }
 

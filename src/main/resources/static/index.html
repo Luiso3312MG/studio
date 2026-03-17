@@ -643,7 +643,6 @@
 
       const email = client?.email || reservation.clientEmail || "Sin email";
       const phone = client?.phone || reservation.clientPhone || "Sin teléfono";
-      const accessType = reservation.accessType === "CLASS_PASS" ? "CLASE LIBRE" : "MEMBRESÍA";
 
       const initials = fullName && fullName !== "Sin nombre"
         ? getInitials(
@@ -664,13 +663,8 @@
             </div>
           </div>
 
-          <div class="text-right shrink-0">
-            <div class="text-xs font-semibold text-text-main/50">
-              ${reservation.reservationStatus || reservation.status || "INSCRITO"}
-            </div>
-            <div class="mt-1 text-[11px] font-bold uppercase tracking-wide ${reservation.accessType === "CLASS_PASS" ? "text-emerald-600" : "text-sky-700"}">
-              ${accessType}
-            </div>
+          <div class="text-xs font-medium text-text-main/50 shrink-0">
+            ${reservation.reservationStatus || reservation.status || "INSCRITO"}
           </div>
         </div>
       `;
@@ -1122,96 +1116,6 @@
     });
   }
 
-  async function promptEnrollmentMode() {
-    const { isConfirmed, value } = await Swal.fire({
-      title: "Tipo de inscripción",
-      html: `
-        <div class="space-y-4 text-left">
-          <label class="flex items-center gap-3 rounded-xl border border-slate-200 p-3 cursor-pointer">
-            <input id="swal-enroll-membership" type="radio" name="swal-enrollment-mode" value="membership" checked>
-            <div>
-              <p class="font-semibold text-slate-900">Usar membresía</p>
-              <p class="text-sm text-slate-500">Valida la membresía activa del alumno.</p>
-            </div>
-          </label>
-          <label class="flex items-center gap-3 rounded-xl border border-slate-200 p-3 cursor-pointer">
-            <input id="swal-enroll-class-pass" type="radio" name="swal-enrollment-mode" value="class-pass">
-            <div>
-              <p class="font-semibold text-slate-900">Registrar como clase libre</p>
-              <p class="text-sm text-slate-500">Genera un pago único para esta clase.</p>
-            </div>
-          </label>
-          <div id="swal-class-pass-fields" class="hidden rounded-xl bg-slate-50 border border-slate-200 p-3 space-y-3">
-            <div>
-              <label class="block text-xs font-bold uppercase tracking-wide text-slate-500 mb-1">Monto</label>
-              <input id="swal-class-pass-amount" type="number" min="0" step="0.01" placeholder="180.00" class="swal2-input !m-0 !w-full">
-            </div>
-            <div>
-              <label class="block text-xs font-bold uppercase tracking-wide text-slate-500 mb-1">Método de pago</label>
-              <select id="swal-class-pass-method" class="swal2-input !m-0 !w-full">
-                <option value="EFECTIVO">Efectivo</option>
-                <option value="TRANSFERENCIA">Transferencia</option>
-                <option value="TARJETA">Tarjeta</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-xs font-bold uppercase tracking-wide text-slate-500 mb-1">Referencia</label>
-              <input id="swal-class-pass-reference" type="text" placeholder="Ticket, folio o nota" class="swal2-input !m-0 !w-full">
-            </div>
-          </div>
-        </div>
-      `,
-      showCancelButton: true,
-      confirmButtonText: "Continuar",
-      cancelButtonText: "Cancelar",
-      confirmButtonColor: "#0A1128",
-      focusConfirm: false,
-      didOpen: () => {
-        const membershipRadio = document.getElementById("swal-enroll-membership");
-        const classPassRadio = document.getElementById("swal-enroll-class-pass");
-        const fields = document.getElementById("swal-class-pass-fields");
-        const toggleFields = () => {
-          if (!fields) return;
-          fields.classList.toggle("hidden", !classPassRadio?.checked);
-        };
-        membershipRadio?.addEventListener("change", toggleFields);
-        classPassRadio?.addEventListener("change", toggleFields);
-        toggleFields();
-      },
-      preConfirm: () => {
-        const classPassRadio = document.getElementById("swal-enroll-class-pass");
-        const amountInput = document.getElementById("swal-class-pass-amount");
-        const methodInput = document.getElementById("swal-class-pass-method");
-        const referenceInput = document.getElementById("swal-class-pass-reference");
-
-        if (!classPassRadio?.checked) {
-          return {
-            useSingleClassPayment: false,
-            paymentAmount: null,
-            paymentMethod: null,
-            paymentReference: null
-          };
-        }
-
-        const amount = Number(amountInput?.value || 0);
-        if (!Number.isFinite(amount) || amount <= 0) {
-          Swal.showValidationMessage("Ingresa un monto válido para la clase libre");
-          return false;
-        }
-
-        return {
-          useSingleClassPayment: true,
-          paymentAmount: Number(amount.toFixed(2)),
-          paymentMethod: methodInput?.value || "EFECTIVO",
-          paymentReference: referenceInput?.value?.trim() || null
-        };
-      }
-    });
-
-    if (!isConfirmed) return null;
-    return value;
-  }
-
   async function enrollClientInClass(clientId) {
     if (!currentClassIdToEnroll) {
       await Swal.fire({
@@ -1233,11 +1137,6 @@
       return;
     }
 
-    const enrollmentMode = await promptEnrollmentMode();
-    if (!enrollmentMode) {
-      return;
-    }
-
     try {
       // Updated to new reservations endpoint under /api/reservations
       const response = await fetch(`/api/reservations/class/${currentClassIdToEnroll}`, {
@@ -1248,13 +1147,7 @@
         },
         body: JSON.stringify({
           clientId: clientId,
-          notes: enrollmentMode.useSingleClassPayment
-            ? "Inscripción desde panel admin - clase libre"
-            : "Inscripción desde panel admin",
-          useSingleClassPayment: enrollmentMode.useSingleClassPayment,
-          paymentAmount: enrollmentMode.paymentAmount,
-          paymentMethod: enrollmentMode.paymentMethod,
-          paymentReference: enrollmentMode.paymentReference
+          notes: "Inscripción desde panel admin"
         })
       });
 
@@ -1285,9 +1178,7 @@
       await Swal.fire({
         icon: "success",
         title: "Alumno inscrito",
-        text: enrollmentMode.useSingleClassPayment
-          ? "El alumno fue inscrito y se registró el pago de clase libre"
-          : "El alumno fue inscrito correctamente",
+        text: "El alumno fue inscrito correctamente",
         confirmButtonColor: "#16a34a"
       });
 

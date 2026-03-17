@@ -131,8 +131,6 @@ public class MembershipService {
         payment.setStudioId(studioId);
         payment.setClientId(client.getId());
         payment.setClientMembershipId(membership.getId());
-        payment.setPaymentType("MEMBERSHIP");
-        payment.setClassId(null);
         payment.setAmount(request.getAmount());
         payment.setPaymentMethod(request.getPaymentMethod() == null || request.getPaymentMethod().isBlank() ? "EFECTIVO" : request.getPaymentMethod());
         payment.setPaymentDate(LocalDate.now());

@@ -1,15 +1,15 @@
 package com.kbseed.dto;
 
-import java.math.BigDecimal;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 public class CreateReservationRequest {
 
+    @NotNull(message = "El clientId es obligatorio")
     private Long clientId;
+
+    @Size(max = 255, message = "Las notas no pueden exceder 255 caracteres")
     private String notes;
-    private Boolean useSingleClassPayment;
-    private BigDecimal paymentAmount;
-    private String paymentMethod;
-    private String paymentReference;
 
     public Long getClientId() {
         return clientId;
@@ -25,37 +25,5 @@ public class CreateReservationRequest {
 
     public void setNotes(String notes) {
         this.notes = notes;
-    }
-
-    public Boolean getUseSingleClassPayment() {
-        return useSingleClassPayment;
-    }
-
-    public void setUseSingleClassPayment(Boolean useSingleClassPayment) {
-        this.useSingleClassPayment = useSingleClassPayment;
-    }
-
-    public BigDecimal getPaymentAmount() {
-        return paymentAmount;
-    }
-
-    public void setPaymentAmount(BigDecimal paymentAmount) {
-        this.paymentAmount = paymentAmount;
-    }
-
-    public String getPaymentMethod() {
-        return paymentMethod;
-    }
-
-    public void setPaymentMethod(String paymentMethod) {
-        this.paymentMethod = paymentMethod;
-    }
-
-    public String getPaymentReference() {
-        return paymentReference;
-    }
-
-    public void setPaymentReference(String paymentReference) {
-        this.paymentReference = paymentReference;
     }
 }
