@@ -24,8 +24,6 @@
           credentials: "include"
         });
 
-        console.log("STATUS /api/auth/me:", response.status);
-
         if (!response.ok) {
           window.location.href = "/login.html";
           return null;
