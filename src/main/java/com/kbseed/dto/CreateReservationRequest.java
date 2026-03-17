@@ -1,10 +1,7 @@
 package com.kbseed.dto;
 
-import jakarta.validation.constraints.NotNull;
-
 public class CreateReservationRequest {
 
-    @NotNull(message = "El clientId es obligatorio")
     private Long clientId;
     private String notes;
 

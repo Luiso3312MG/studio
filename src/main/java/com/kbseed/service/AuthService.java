@@ -70,24 +70,11 @@ public class AuthService {
         response.setStudioName(studio != null ? studio.getName() : "Studio Admin");
         response.setUsername(user.getEmail());
         response.setFullName(user.getFullName());
-        response.setRole(resolveRole(user.getRoleId()));
-        response.setEmail(user.getEmail());
+        response.setRole(user.getRoleId() != null ? user.getRoleId().toString() : "ADMIN");
         return response;
     }
 
     public void logout() {
         session.invalidate();
-    }
-
-    private String resolveRole(Long roleId) {
-        if (roleId == null) {
-            return "ADMIN";
-        }
-        return switch (roleId.intValue()) {
-            case 1 -> "ADMIN";
-            case 2 -> "COACH";
-            case 3 -> "RECEPCION";
-            default -> roleId.toString();
-        };
     }
 }

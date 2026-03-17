@@ -7,7 +7,6 @@ public class AuthResponse {
     private String username;
     private String fullName;
     private String role;
-    private String email;
 
     public boolean isAuthenticated() {
         return authenticated;
@@ -55,13 +54,5 @@ public class AuthResponse {
 
     public void setRole(String role) {
         this.role = role;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
     }
 }

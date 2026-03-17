@@ -7,7 +7,6 @@ public class MeResponse {
     private String fullName;
     private String role;
     private String studioName;
-    private String email;
 
     public Long getId() {
         return id;
@@ -55,13 +54,5 @@ public class MeResponse {
 
     public void setStudioName(String studioName) {
         this.studioName = studioName;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
     }
 }

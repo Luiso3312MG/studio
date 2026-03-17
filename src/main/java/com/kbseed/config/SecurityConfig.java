@@ -2,6 +2,7 @@ package com.kbseed.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -14,22 +15,23 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
+                .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/",
-                                "/*.html",
+                                "/login.html",
+                                "/index.html",
+                                "/students.html",
+                                "/class-admin.html",
+                                "/memberships.html",
                                 "/favicon.ico",
                                 "/css/**",
                                 "/js/**",
                                 "/images/**"
                         ).permitAll()
-                        .requestMatchers(
-                                "/api/auth/login",
-                                "/api/auth/ping"
-                        ).permitAll()
-                        .anyRequest().authenticated()
-                )
-                .formLogin(login -> login.disable())
+                        .requestMatchers("/api/auth/login", "/api/auth/logout", "/api/auth/me", "/api/auth/ping").permitAll()
+                        .anyRequest().permitAll())
+                .formLogin(form -> form.disable())
                 .httpBasic(basic -> basic.disable());
 
         return http.build();
