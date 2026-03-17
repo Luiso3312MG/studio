@@ -207,7 +207,7 @@
         <span class="material-symbols-outlined text-text-main">settings_applications</span>
         <span class="text-text-main text-sm font-medium">Config. clases</span>
       </a>
-    
+
       <a class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-black/5"
          href="/memberships.html">
         <span class="material-symbols-outlined text-text-main">card_membership</span>
@@ -217,7 +217,7 @@
         <span class="material-symbols-outlined fill-icon">bar_chart</span><span class="text-sm font-bold">Reportes</span>
       </a>
 
-      </nav>
+    </nav>
 
     <div class="p-4 mt-auto">
       <button id="btn-logout" class="w-full rounded-xl border theme-border px-4 py-3 font-semibold theme-secondary-bg">Cerrar sesión</button>
@@ -790,6 +790,13 @@
                 Inscribir alumno
               </button>
               <button
+                class="js-action-btn w-full text-left px-4 py-3 text-sm hover:bg-slate-50 text-amber-700"
+                data-action="cobrar-clase-suelta"
+                data-class-id="${clase.id}"
+                type="button">
+                Cobrar clase suelta
+              </button>
+              <button
                 class="js-action-btn w-full text-left px-4 py-3 text-sm hover:bg-slate-50"
                 data-action="eliminar-clase"
                 data-class-id="${clase.id}"
@@ -918,6 +925,10 @@
 
         if (action === "inscribir-alumno") {
           await openEnrollmentModal(classId);
+        }
+
+        if (action === "cobrar-clase-suelta") {
+          await openDropInModal(classId);
         }
 
         if (action === "eliminar-clase") {
@@ -1204,6 +1215,107 @@
     }
   }
 
+
+  // ─── Modal clase suelta ────────────────────────────────────────────────────
+  let dropInClassId = null;
+
+  async function openDropInModal(classId) {
+    dropInClassId = classId;
+    const clase = classData.find(c => Number(c.id) === Number(classId));
+    document.getElementById("dropin-clase-info").textContent =
+      clase ? `${clase.classTypeName} — ${formatTime(clase.startTime)}` : `Clase #${classId}`;
+
+    await ensureStudioClientsLoaded();
+    const select = document.getElementById("dropin-alumno-select");
+    select.innerHTML = '<option value="">— Selecciona un alumno —</option>';
+    studioClients
+      .filter(c => c.status === "ACTIVE" || c.status === "ACTIVO")
+      .forEach(c => {
+        const opt = document.createElement("option");
+        opt.value = c.id;
+        opt.textContent = `${c.firstName || ""} ${c.lastName || ""}`.trim();
+        select.appendChild(opt);
+      });
+
+    document.getElementById("dropin-monto").value = "";
+    document.getElementById("dropin-metodo").value = "EFECTIVO";
+    document.getElementById("dropin-referencia").value = "";
+    document.getElementById("dropin-btn-guardar").disabled = false;
+    document.getElementById("dropin-btn-guardar").textContent = "Guardar pago";
+    document.getElementById("modal-dropin").classList.remove("hidden");
+  }
+
+  function closeDropInModal() {
+    document.getElementById("modal-dropin").classList.add("hidden");
+    dropInClassId = null;
+  }
+
+  async function submitDropIn() {
+    const clientId = document.getElementById("dropin-alumno-select").value;
+    const monto    = document.getElementById("dropin-monto").value;
+    const metodo   = document.getElementById("dropin-metodo").value;
+    const ref      = document.getElementById("dropin-referencia").value.trim();
+
+    if (!clientId) {
+      await Swal.fire({ icon: "warning", title: "Falta el alumno", text: "Selecciona un alumno para continuar.", confirmButtonColor: "#0A1128" });
+      return;
+    }
+    if (!monto || Number(monto) <= 0) {
+      await Swal.fire({ icon: "warning", title: "Falta el monto", text: "Ingresa un monto mayor a cero.", confirmButtonColor: "#0A1128" });
+      return;
+    }
+
+    const btn = document.getElementById("dropin-btn-guardar");
+    btn.disabled = true;
+    btn.textContent = "Guardando...";
+
+    try {
+      const response = await fetch("/api/payments/drop-in", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          clientId:      Number(clientId),
+          classId:       Number(dropInClassId),
+          amount:        Number(monto),
+          paymentMethod: metodo,
+          reference:     ref || null,
+          notes:         "Clase suelta — registro desde panel"
+        })
+      });
+
+      if (!response.ok) {
+        const msg = await extractErrorMessage(response, "No se pudo registrar el pago");
+        await Swal.fire({ icon: "error", title: "Error", text: msg, confirmButtonColor: "#dc2626" });
+        return;
+      }
+
+      const savedClassId = dropInClassId;
+      closeDropInModal();
+      delete reservationsByClass[savedClassId];
+      await loadClasses();
+
+      await Swal.fire({
+        icon: "success",
+        title: "Clase suelta registrada",
+        text: "El pago y la inscripción quedaron guardados.",
+        confirmButtonColor: "#16a34a"
+      });
+    } catch (err) {
+      await Swal.fire({ icon: "error", title: "Error", text: "Ocurrió un error al registrar el pago.", confirmButtonColor: "#dc2626" });
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "Guardar pago";
+    }
+  }
+
+  document.getElementById("dropin-btn-cancelar")?.addEventListener("click", closeDropInModal);
+  document.getElementById("dropin-btn-cerrar")?.addEventListener("click", closeDropInModal);
+  document.getElementById("modal-dropin")?.addEventListener("click", e => {
+    if (e.target === document.getElementById("modal-dropin")) closeDropInModal();
+  });
+  document.getElementById("dropin-btn-guardar")?.addEventListener("click", submitDropIn);
+
   function initLogout() {
     const btnLogout = document.getElementById("btn-logout");
     if (!btnLogout) return;
@@ -1238,6 +1350,69 @@
     });
   }
 </script>
+
+<!-- Modal: Cobrar clase suelta -->
+<div id="modal-dropin" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30 backdrop-blur-sm">
+  <div class="bg-white w-full max-w-md rounded-xl shadow-2xl border border-accent-border overflow-hidden">
+    <div class="p-6 border-b border-accent-border flex justify-between items-start">
+      <div>
+        <h2 class="text-xl font-bold text-text-main">Cobrar clase suelta</h2>
+        <p id="dropin-clase-info" class="text-sm text-primary font-medium mt-1"></p>
+      </div>
+      <button id="dropin-btn-cerrar" type="button" class="text-text-main/40 hover:text-primary transition-colors">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+
+    <div class="p-6 space-y-4">
+      <div>
+        <label class="block text-sm font-bold mb-1">Alumno</label>
+        <select id="dropin-alumno-select"
+                class="w-full border border-accent-border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary">
+        </select>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-bold mb-1">Monto</label>
+          <input id="dropin-monto" type="number" min="1" step="0.01" placeholder="0.00"
+                 class="w-full border border-accent-border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary" />
+        </div>
+        <div>
+          <label class="block text-sm font-bold mb-1">Método de pago</label>
+          <select id="dropin-metodo"
+                  class="w-full border border-accent-border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary">
+            <option value="EFECTIVO">Efectivo</option>
+            <option value="TRANSFERENCIA">Transferencia</option>
+            <option value="TARJETA">Tarjeta</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-sm font-bold mb-1">Referencia <span class="font-normal text-text-sub">(opcional)</span></label>
+        <input id="dropin-referencia" type="text" placeholder="Núm. de transferencia, folio, etc."
+               class="w-full border border-accent-border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary" />
+      </div>
+
+      <p class="text-xs text-text-sub bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
+        El alumno quedará inscrito automáticamente en la clase y se descontará un cupo.
+      </p>
+    </div>
+
+    <div class="bg-primary/5 px-6 py-4 border-t border-accent-border flex justify-end gap-3">
+      <button id="dropin-btn-cancelar" type="button"
+              class="px-5 py-2 text-text-main/60 font-medium hover:text-primary transition-colors">
+        Cancelar
+      </button>
+      <button id="dropin-btn-guardar" type="button"
+              class="px-5 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg font-bold shadow-sm transition-all active:scale-95">
+        Guardar pago
+      </button>
+    </div>
+  </div>
+</div>
+
 </body>
 
 </html>
