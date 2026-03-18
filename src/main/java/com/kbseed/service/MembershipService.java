@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -106,12 +105,12 @@ public class MembershipService {
         validateDisciplines(studioId, plan, request.getDisciplineIds());
 
         ClientMembershipEntity previous = clientMembershipRepository.findTopByClientIdOrderByEndDateDesc(clientId).orElse(null);
-        LocalDate startDate = LocalDate.now(ZoneId.of("America/Mexico_City"));
-        if (previous != null && previous.getEndDate() != null && previous.getEndDate().isAfter(LocalDate.now(ZoneId.of("America/Mexico_City")))) {
+        LocalDate startDate = LocalDate.now();
+        if (previous != null && previous.getEndDate() != null && previous.getEndDate().isAfter(LocalDate.now())) {
             startDate = previous.getEndDate().plusDays(1);
             previous.setStatus("RENOVADA");
             clientMembershipRepository.save(previous);
-        } else if (previous != null && previous.getEndDate() != null && previous.getEndDate().isBefore(LocalDate.now(ZoneId.of("America/Mexico_City")))) {
+        } else if (previous != null && previous.getEndDate() != null && previous.getEndDate().isBefore(LocalDate.now())) {
             previous.setStatus("VENCIDA");
             clientMembershipRepository.save(previous);
         }
@@ -134,7 +133,7 @@ public class MembershipService {
         payment.setClientMembershipId(membership.getId());
         payment.setAmount(request.getAmount());
         payment.setPaymentMethod(request.getPaymentMethod() == null || request.getPaymentMethod().isBlank() ? "EFECTIVO" : request.getPaymentMethod());
-        payment.setPaymentDate(LocalDate.now(ZoneId.of("America/Mexico_City")));
+        payment.setPaymentDate(LocalDate.now());
         payment.setReference(request.getReference());
         payment.setNotes(request.getNotes());
         payment.setPaymentType("MEMBRESIA");
@@ -158,7 +157,7 @@ public class MembershipService {
 
     public ClientMembershipEntity requireActiveMembership(Long clientId, Long studioId) {
         ClientMembershipEntity membership = clientMembershipRepository
-                .findTopByClientIdAndStatusAndEndDateGreaterThanEqualOrderByEndDateDesc(clientId, "ACTIVA", LocalDate.now(ZoneId.of("America/Mexico_City")))
+                .findTopByClientIdAndStatusAndEndDateGreaterThanEqualOrderByEndDateDesc(clientId, "ACTIVA", LocalDate.now())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.CONFLICT, "El alumno no tiene una membresía activa"));
         if (!membership.getStudioId().equals(studioId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "El alumno no pertenece al studio actual");
@@ -205,7 +204,7 @@ public class MembershipService {
         if (membership == null) {
             return "No cuenta con membresía activa";
         }
-        if (membership.getEndDate().isBefore(LocalDate.now(ZoneId.of("America/Mexico_City")))) {
+        if (membership.getEndDate().isBefore(LocalDate.now())) {
             return "La membresía está vencida";
         }
         List<ReservationEntity> existingReservations = reservationRepository.findByClientIdAndReservationStatusIn(
@@ -219,7 +218,7 @@ public class MembershipService {
                 .collect(Collectors.toMap(ClassTypeEntity::getName, Function.identity(), (a, b) -> a));
         boolean hasDisciplineToday = existingReservations.stream().anyMatch(existing -> {
             ClassEntity classEntity = classesById.get(existing.getClassId());
-            if (classEntity == null || !classEntity.getClassDate().equals(LocalDate.now(ZoneId.of("America/Mexico_City")))) return false;
+            if (classEntity == null || !classEntity.getClassDate().equals(LocalDate.now())) return false;
             ClassTypeEntity classType = typesByName.get(classEntity.getClassTypeName());
             return classType != null && "DISCIPLINA".equals(classType.getCategory());
         });
@@ -312,7 +311,7 @@ public class MembershipService {
     }
 
     private String resolveMembershipStatus(ClientMembershipEntity membership) {
-        if (membership.getEndDate().isBefore(LocalDate.now(ZoneId.of("America/Mexico_City")))) {
+        if (membership.getEndDate().isBefore(LocalDate.now())) {
             return "VENCIDA";
         }
         return membership.getStatus();

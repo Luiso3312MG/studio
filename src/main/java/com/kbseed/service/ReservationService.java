@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -59,7 +58,7 @@ public class ReservationService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Tipo de clase no encontrado"));
 
         LocalDateTime classStart = LocalDateTime.of(classEntity.getClassDate(), classEntity.getStartTime());
-        if (!classStart.isAfter(LocalDateTime.now(ZoneId.of("America/Mexico_City")))) {
+        if (!classStart.isAfter(LocalDateTime.now())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "No se puede inscribir en clases anteriores o que ya iniciaron");
         }
 
@@ -113,13 +112,13 @@ public class ReservationService {
 
         LocalDateTime classStart = LocalDateTime.of(classEntity.getClassDate(), classEntity.getStartTime());
         LocalDateTime cancelLimit = classStart.minusMinutes(appSettingService.getReservationCancelMinutes());
-        if (LocalDateTime.now(ZoneId.of("America/Mexico_City")).isAfter(cancelLimit)) {
+        if (LocalDateTime.now().isAfter(cancelLimit)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
                     "La cancelación debe hacerse al menos " + appSettingService.getReservationCancelMinutes() + " minutos antes");
         }
 
         reservation.setReservationStatus("CANCELADA");
-        reservation.setCancellationAt(LocalDateTime.now(ZoneId.of("America/Mexico_City")));
+        reservation.setCancellationAt(LocalDateTime.now());
         if (notes != null && !notes.isBlank()) reservation.setNotes(notes);
         reservation = reservationRepository.save(reservation);
 
@@ -141,7 +140,7 @@ public class ReservationService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Solo se pueden hacer check-in a reservas activas");
         }
         reservation.setReservationStatus("ASISTIO");
-        reservation.setCheckedInAt(LocalDateTime.now(ZoneId.of("America/Mexico_City")));
+        reservation.setCheckedInAt(LocalDateTime.now());
         if (notes != null && !notes.isBlank()) reservation.setNotes(notes);
         reservation = reservationRepository.save(reservation);
         ClientEntity client = clientRepository.findById(reservation.getClientId()).orElse(null);
