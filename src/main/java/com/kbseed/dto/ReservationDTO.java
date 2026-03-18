@@ -1,5 +1,6 @@
 package com.kbseed.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDateTime;
 
 public class ReservationDTO {
@@ -9,8 +10,11 @@ public class ReservationDTO {
     private Long classId;
     private Long clientId;
     private String reservationStatus;
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime bookedAt;
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime checkedInAt;
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime cancellationAt;
     private String notes;
 
