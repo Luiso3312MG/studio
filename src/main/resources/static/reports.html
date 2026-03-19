@@ -172,6 +172,11 @@
           <p id="i-memb-s" class="text-xs text-text-sub mt-1">— cobros</p>
         </div>
         <div class="kpi">
+          <p class="text-xs font-bold uppercase tracking-wider text-text-sub mb-1">Clases sueltas</p>
+          <h3 id="i-drop" class="text-2xl font-extrabold text-amber-600">$0</h3>
+          <p id="i-drop-s" class="text-xs text-text-sub mt-1">— clases</p>
+        </div>
+        <div class="kpi">
           <p class="text-xs font-bold uppercase tracking-wider text-text-sub mb-1">Promedio por cobro</p>
           <h3 id="i-prom" class="text-2xl font-extrabold">$0</h3>
           <p class="text-xs text-text-sub mt-1">por cobro</p>
@@ -324,29 +329,34 @@ function s (id,v)  { const el=document.getElementById(id); if(el) el.textContent
 function kpisIngresos(pagos) {
   const tot=pagos.reduce((a,p)=>a+Number(p.amount||0),0);
   const mb=pagos.filter(p=>p.paymentType==='MEMBRESIA');
+  const dr=pagos.filter(p=>p.paymentType==='DROP_IN');
   s('i-total', $(tot)); s('i-total-s', `${pagos.length} cobro${pagos.length!==1?'s':''}`);
   s('i-memb',  $(mb.reduce((a,p)=>a+Number(p.amount||0),0))); s('i-memb-s', `${mb.length} cobro${mb.length!==1?'s':''}`);
+  s('i-drop',  $(dr.reduce((a,p)=>a+Number(p.amount||0),0))); s('i-drop-s', `${dr.length} clase${dr.length!==1?'s':''}`);
   s('i-prom',  $(pagos.length ? tot/pagos.length : 0));
 }
 
 function chartPeriodo(pagos, sv, ev) {
   const ctx=document.getElementById('c-periodo').getContext('2d');
   if (chPer) { chPer.destroy(); chPer=null; }
-  let lbs=[], dm=[];
+  let lbs=[], dm=[], dd=[];
   if (periodo==='dia') {
     const bh={};
-    for(let h=6;h<=22;h++) bh[h]={m:0};
+    for(let h=6;h<=22;h++) bh[h]={m:0,d:0};
     pagos.forEach(p=>{
-      const h=p.createdAt?((new Date(p.createdAt).getUTCHours()-6+24)%24):10;
-      if(!bh[h]) bh[h]={m:0};
+      const h=p.createdAt?new Date(p.createdAt).getHours():10;
+      if(!bh[h]) bh[h]={m:0,d:0};
       if(p.paymentType==='MEMBRESIA') bh[h].m+=Number(p.amount||0);
+      else bh[h].d+=Number(p.amount||0);
     });
     lbs=Object.keys(bh).map(h=>`${h}h`);
     dm=Object.values(bh).map(v=>v.m);
+    dd=Object.values(bh).map(v=>v.d);
   } else if (periodo==='semana') {
     const ds=Array.from({length:7},(_,i)=>dias(new Date(sv+'T12:00:00'),i));
     lbs=ds.map(d=>d.toLocaleDateString('es-MX',{weekday:'short',day:'numeric'}));
     dm=ds.map(d=>pagos.filter(p=>p.paymentDate===iso(d)&&p.paymentType==='MEMBRESIA').reduce((a,p)=>a+Number(p.amount||0),0));
+    dd=ds.map(d=>pagos.filter(p=>p.paymentDate===iso(d)&&p.paymentType==='DROP_IN').reduce((a,p)=>a+Number(p.amount||0),0));
   } else {
     const s0=new Date(sv+'T12:00:00'), e0=new Date(ev+'T12:00:00');
     let sem=1, cur=new Date(s0), sems=[];
@@ -356,9 +366,11 @@ function chartPeriodo(pagos, sv, ev) {
     }
     lbs=sems.map(w=>w.l);
     dm=sems.map(w=>pagos.filter(p=>p.paymentDate>=w.s&&p.paymentDate<=w.e&&p.paymentType==='MEMBRESIA').reduce((a,p)=>a+Number(p.amount||0),0));
+    dd=sems.map(w=>pagos.filter(p=>p.paymentDate>=w.s&&p.paymentDate<=w.e&&p.paymentType==='DROP_IN').reduce((a,p)=>a+Number(p.amount||0),0));
   }
   chPer=new Chart(ctx,{type:'bar',data:{labels:lbs,datasets:[
-    {label:'Membresías',data:dm,backgroundColor:'rgba(59,130,246,.75)',borderRadius:5,borderSkipped:false}
+    {label:'Membresías',data:dm,backgroundColor:'rgba(59,130,246,.75)',borderRadius:5,borderSkipped:false},
+    {label:'Clases sueltas',data:dd,backgroundColor:'rgba(245,158,11,.75)',borderRadius:5,borderSkipped:false}
   ]},options:{responsive:true,maintainAspectRatio:false,
     plugins:{legend:{position:'bottom',labels:{font:{family:'Manrope',size:11},boxWidth:12,padding:12}},
       tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${$(c.parsed.y)}`}}},
@@ -392,10 +404,10 @@ function tablaDetalle(pagos) {
   s('det-count',`${pagos.length} registro${pagos.length!==1?'s':''}`);
   if (!pagos.length) { tb.innerHTML=''; em.classList.remove('hidden'); return; }
   em.classList.add('hidden');
-  const tl={MEMBRESIA:'Membresía'}, tb2={MEMBRESIA:'b-blue'};
+  const tl={MEMBRESIA:'Membresía',DROP_IN:'Clase suelta'}, tb2={MEMBRESIA:'b-blue',DROP_IN:'b-amber'};
   const mb2={EFECTIVO:'b-green',TRANSFERENCIA:'b-purple',TARJETA:'b-rose'};
   tb.innerHTML=[...pagos].sort((a,b)=>(b.paymentDate||'').localeCompare(a.paymentDate||'')).map(p=>{
-    const con=p.notes||p.reference||p.classTypeName||'—';
+    const con=p.paymentType==='DROP_IN'?`${p.classTypeName||'Clase'}${p.classDate?' · '+p.classDate:''}`:(p.notes||p.reference||'Membresía');
     return `<tr class="border-b border-[var(--theme-bg)] transition-colors">
       <td class="px-5 py-3 text-xs text-text-sub">${p.paymentDate||'—'}</td>
       <td class="px-5 py-3 font-semibold text-sm">${p.clientName||'—'}</td>
@@ -458,7 +470,8 @@ function chart6Meses() {
     meses.push({l:d.toLocaleDateString('es-MX',{month:'short'}), p:`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`});
   }
   ch6m=new Chart(ctx,{type:'bar',data:{labels:meses.map(m=>m.l),datasets:[
-    {label:'Membresías',data:meses.map(m=>allPagos.filter(p=>p.paymentDate?.startsWith(m.p)&&p.paymentType==='MEMBRESIA').reduce((a,p)=>a+Number(p.amount||0),0)),backgroundColor:'rgba(59,130,246,.7)',borderRadius:5,borderSkipped:false}
+    {label:'Membresías',data:meses.map(m=>allPagos.filter(p=>p.paymentDate?.startsWith(m.p)&&p.paymentType==='MEMBRESIA').reduce((a,p)=>a+Number(p.amount||0),0)),backgroundColor:'rgba(59,130,246,.7)',borderRadius:5,borderSkipped:false},
+    {label:'Clases sueltas',data:meses.map(m=>allPagos.filter(p=>p.paymentDate?.startsWith(m.p)&&p.paymentType==='DROP_IN').reduce((a,p)=>a+Number(p.amount||0),0)),backgroundColor:'rgba(245,158,11,.7)',borderRadius:5,borderSkipped:false}
   ]},options:{responsive:true,maintainAspectRatio:false,
     plugins:{legend:{position:'bottom',labels:{font:{family:'Manrope',size:11},boxWidth:12,padding:12}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${$(c.parsed.y)}`}}},
     scales:{x:{stacked:true,grid:{display:false},ticks:{font:{family:'Manrope',size:11}}},y:{stacked:true,grid:{color:'rgba(0,0,0,.04)'},ticks:{font:{family:'Manrope',size:11},callback:v=>'$'+v.toLocaleString('es-MX')}}}}});
@@ -488,7 +501,7 @@ function cobrosRecientes(pagos) {
   const sorted=[...pagos].sort((a,b)=>(b.paymentDate||'').localeCompare(a.paymentDate||'')).slice(0,8);
   if (!sorted.length) { tb.innerHTML=''; em.classList.remove('hidden'); return; }
   em.classList.add('hidden');
-  const tl={MEMBRESIA:'Membresía'}, tb2={MEMBRESIA:'b-blue'};
+  const tl={MEMBRESIA:'Membresía',DROP_IN:'Clase suelta'}, tb2={MEMBRESIA:'b-blue',DROP_IN:'b-amber'};
   tb.innerHTML=sorted.map(p=>`
     <tr class="transition-colors">
       <td class="px-5 py-3 font-semibold text-sm truncate max-w-[120px]">${p.clientName||'—'}</td>

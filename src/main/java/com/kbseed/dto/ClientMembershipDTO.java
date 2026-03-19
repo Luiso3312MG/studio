@@ -1,7 +1,6 @@
 package com.kbseed.dto;
 
 import java.math.BigDecimal;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -11,9 +10,7 @@ public class ClientMembershipDTO {
     private Long membershipPlanId;
     private String membershipPlanName;
     private String status;
-    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate startDate;
-    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate endDate;
     private BigDecimal pricePaid;
     private List<Long> disciplineIds;
