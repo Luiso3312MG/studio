@@ -1,6 +1,8 @@
 package com.kbseed.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -23,7 +25,8 @@ public class ReservationEntity {
     @Column(name = "reservation_status", nullable = false)
     private String reservationStatus;
 
-    @Column(name = "booked_at", insertable = false, updatable = false)
+    @Column(name = "booked_at")
+    @CreationTimestamp
     private LocalDateTime bookedAt;
 
     @Column(name = "checked_in_at")

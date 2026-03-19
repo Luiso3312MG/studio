@@ -1,5 +1,6 @@
 package com.kbseed.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -16,9 +17,14 @@ public class PaymentDTO {
     private String paymentType; // MEMBRESIA | DROP_IN
     private BigDecimal amount;
     private String paymentMethod;
+
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate paymentDate;
+
     private String reference;
     private String notes;
+
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdAt;
 
     public Long getId() { return id; }
