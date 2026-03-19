@@ -1,6 +1,5 @@
 package com.kbseed.dto;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -11,7 +10,6 @@ public class MembershipOverviewDTO {
     private String clientPhone;
     private String membershipStatus;
     private String planName;
-    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate membershipEndDate;
     private List<String> disciplines;
     private Integer remainingPresotherapySessions;

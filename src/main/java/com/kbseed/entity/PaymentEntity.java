@@ -1,8 +1,6 @@
 package com.kbseed.entity;
 
 import jakarta.persistence.*;
-import org.hibernate.annotations.CreationTimestamp;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -44,8 +42,7 @@ public class PaymentEntity {
     @Column(name = "notes")
     private String notes;
 
-    @Column(name = "created_at")
-    @CreationTimestamp
+    @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
 
     public Long getId() { return id; }

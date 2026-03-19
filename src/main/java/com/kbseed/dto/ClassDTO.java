@@ -1,6 +1,5 @@
 package com.kbseed.dto;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
@@ -10,7 +9,6 @@ public class ClassDTO {
     private String classTypeName;
     private String roomName;
     private String coachUserName;
-    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate classDate;
     private LocalTime startTime;
     private LocalTime endTime;
